@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Shelem 🃏</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root {
+    --bg: #0f0f1a;
+    --card: #1a1a2e;
+    --accent: #e94560;
+    --accent2: #0f3460;
+    --text: #eaeaea;
+    --muted: #666;
+    --green: #4caf50;
+    --red: #f44336;
+    --gold: #ffd700;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 14px;
+  }
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ─── Shared ─────────────────────────────────────────── */
+  h1 { text-align: center; font-size: 1.5rem; margin-bottom: 2px; }
+  .card { background: var(--card); border-radius: var(--radius); padding: 14px; margin-bottom: 10px; }
+  .section-title { font-size: 0.68rem; text-transform: uppercase; color: var(--muted); letter-spacing: 1px; margin-bottom: 8px; }
+  label { display: block; font-size: 0.78rem; color: var(--muted); margin-bottom: 3px; }
+
+  .btn {
+    display: block; width: 100%; padding: 13px; border: none;
+    border-radius: var(--radius); font-size: 1rem; font-weight: 600;
+    cursor: pointer; margin-bottom: 8px; transition: opacity 0.15s;
+  }
+  .btn:active { opacity: 0.75; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-outline { background: transparent; border: 1px solid #444; color: var(--text); }
+  .btn-sm { padding: 8px 14px; font-size: 0.85rem; width: auto; display: inline-block; margin-bottom: 0; }
+
+  input, select {
+    width: 100%; padding: 11px; border-radius: 8px;
+    border: 1px solid #2a2a3e; background: #0d1020;
+    color: var(--text); font-size: 0.95rem; margin-bottom: 8px;
+    -webkit-appearance: none;
+  }
+  input:focus, select:focus { outline: none; border-color: var(--accent); }
+
+  /* ─── Setup ──────────────────────────────────────────── */
+  .team-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .team-grid input { margin-bottom: 0; }
+
+  .dealer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .dealer-btn {
+    padding: 11px 8px; text-align: center; border-radius: 8px;
+    border: 1px solid #2a2a3e; cursor: pointer; font-size: 0.9rem;
+    background: #0d1020; color: var(--text); transition: all 0.15s;
+  }
+  .dealer-btn.selected { border-color: var(--accent); background: rgba(233,69,96,0.2); font-weight: 700; }
+
+  .join-row { display: flex; gap: 8px; }
+  .join-row input { margin-bottom: 0; flex: 1; font-family: monospace; }
+
+  /* ─── Scoreboard ─────────────────────────────────────── */
+  .scoreboard { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 6px; }
+  .score-box {
+    background: var(--accent2); border-radius: var(--radius);
+    padding: 12px; text-align: center; border: 2px solid transparent;
+    transition: border-color 0.3s;
+  }
+  .score-box.leading { border-color: var(--gold); }
+  .score-box .t-name { font-size: 0.7rem; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
+  .score-box .t-players { font-size: 0.68rem; color: #555; margin: 2px 0 6px; }
+  .score-box .t-score { font-size: 2.1rem; font-weight: 800; line-height: 1; }
+  .score-box .t-target { font-size: 0.62rem; color: var(--muted); margin-top: 3px; }
+  .progress-bar { height: 3px; background: #222; border-radius: 2px; margin-top: 6px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.4s; }
+  .round-lbl { text-align: center; font-size: 0.72rem; color: var(--muted); margin-bottom: 10px; }
+
+  /* ─── Add Round button ───────────────────────────────── */
+  .add-round-wrap { margin-bottom: 10px; }
+
+  /* ─── Round input: step 1 — team picker ─────────────── */
+  .team-pick-wrap {
+    display: grid; grid-template-columns: 1fr 36px 1fr; gap: 6px;
+    align-items: stretch; margin-bottom: 12px;
+  }
+  .team-pick-card {
+    border: 2px solid #2a2a3e; border-radius: var(--radius);
+    padding: 14px 10px; text-align: center; cursor: pointer;
+    transition: all 0.18s; background: #0d1020;
+  }
+  .team-pick-card:active { opacity: 0.8; }
+  .team-pick-card.selected { border-color: var(--accent); background: rgba(233,69,96,0.12); }
+  .team-pick-card .pick-label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .team-pick-card .pick-players { font-size: 0.85rem; font-weight: 600; line-height: 1.4; }
+  .vs-sep { display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 0.75rem; font-weight: 700; }
+
+  /* ─── Round input: step 2 — score entry ─────────────── */
+  .score-entry { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  .score-col { }
+  .score-col-header {
+    font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; margin-bottom: 8px; padding: 6px 8px;
+    border-radius: 6px; text-align: center;
+  }
+  .score-col-header.bidder { background: rgba(233,69,96,0.18); color: #e94560; }
+  .score-col-header.defender { background: rgba(15,52,96,0.6); color: #7ab8f5; }
+
+  /* Outcome dropdown styled options */
+  .outcome-select { margin-bottom: 0; }
+
+  /* Stepper */
+  .stepper {
+    display: flex; align-items: center; border: 1px solid #2a2a3e;
+    border-radius: 8px; overflow: hidden; background: #0d1020;
+  }
+  .stepper-btn {
+    flex: 0 0 44px; padding: 11px; border: none; background: #1a1a2e;
+    color: var(--text); font-size: 1.2rem; cursor: pointer;
+    transition: background 0.15s;
+  }
+  .stepper-btn:active { background: var(--accent2); }
+  .stepper-val {
+    flex: 1; text-align: center; font-size: 1.15rem; font-weight: 700;
+    padding: 11px 4px;
+  }
+  .stepper-label { font-size: 0.62rem; color: var(--muted); text-align: center; margin-top: 4px; }
+
+  /* Bid input row */
+  .bid-row { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+  .bid-row label { margin: 0; white-space: nowrap; font-size: 0.78rem; color: var(--muted); }
+  .bid-row input { margin-bottom: 0; flex: 1; }
+
+  /* Preview */
+  .round-preview {
+    display: none; background: #0d1020; border-radius: 8px;
+    padding: 10px 12px; margin-bottom: 10px; font-size: 0.85rem;
+  }
+  .round-preview.show { display: flex; justify-content: space-between; align-items: center; }
+  .preview-outcome { font-weight: 700; }
+  .preview-deltas { display: flex; gap: 14px; }
+  .preview-delta { }
+  .preview-delta .dlabel { font-size: 0.68rem; color: var(--muted); }
+  .preview-delta .dval { font-weight: 700; font-size: 0.95rem; }
+  .pos { color: var(--green); }
+  .neg { color: var(--red); }
+
+  /* Step nav */
+  .step-nav { display: flex; gap: 8px; }
+  .step-nav .btn { flex: 1; margin-bottom: 0; }
+
+  /* ─── History ─────────────────────────────────────────── */
+  .history-list { max-height: 300px; overflow-y: auto; }
+  .round-row {
+    display: grid; grid-template-columns: 22px 1fr 1fr 1fr 28px;
+    gap: 4px; align-items: center;
+    padding: 8px 2px; border-bottom: 1px solid #1a1a2e; font-size: 0.8rem;
+  }
+  .round-row:last-child { border-bottom: none; }
+  .rnum { color: var(--muted); font-size: 0.7rem; }
+  .r-outcome { }
+  .r-outcome .outcome-name { font-weight: 600; font-size: 0.78rem; }
+  .r-outcome .bid-info { font-size: 0.68rem; color: var(--muted); }
+  .kapp-badge { font-size: 0.58rem; background: var(--gold); color: #000; padding: 1px 4px; border-radius: 3px; }
+  .delta-cell { text-align: right; font-weight: 700; }
+  .delta-cell .team-tiny { display: block; font-size: 0.62rem; font-weight: 400; color: var(--muted); }
+  .edit-btn { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 0.82rem; padding: 4px; }
+  .edit-btn:hover { color: var(--text); }
+
+  /* Edit inline */
+  .edit-inline { grid-column: 1/-1; background: #14102a; border-radius: 8px; padding: 10px; margin: 4px 0; }
+  .edit-inline .score-entry { margin-bottom: 8px; }
+  .edit-nav { display: flex; gap: 6px; }
+  .edit-nav button { flex: 1; padding: 8px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.82rem; font-weight: 600; }
+  .btn-save-edit { background: var(--green); color: #fff; }
+  .btn-cancel-edit { background: #333; color: var(--text); }
+
+  /* ─── Winner ─────────────────────────────────────────── */
+  .winner-wrap { text-align: center; padding: 28px 0 18px; }
+  .trophy { font-size: 3.5rem; margin-bottom: 8px; }
+  .winner-team { font-size: 1.5rem; font-weight: 800; color: var(--gold); }
+  .winner-players { color: var(--muted); margin: 4px 0 6px; font-size: 0.9rem; }
+  .final-scores { font-size: 1.1rem; font-weight: 700; margin-bottom: 20px; }
+  .stats-section { display: none; margin-bottom: 14px; }
+  .stats-section.show { display: block; }
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat-box { background: var(--card); border-radius: var(--radius); padding: 10px; }
+  .stat-box .slabel { font-size: 0.68rem; color: var(--muted); margin-bottom: 3px; }
+  .stat-box .sval { font-size: 1.1rem; font-weight: 700; }
+
+  /* Top bar */
+  .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .gid { font-size: 0.7rem; color: var(--muted); }
+  .gid span { font-family: monospace; color: #aaa; }
+  .dealer-chip { font-size: 0.7rem; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════ SETUP ══════════════════ -->
+<div id="screen-setup" class="screen active">
+  <h1>🃏 Shelem</h1>
+  <p style="text-align:center; color:var(--muted); font-size:0.85rem; margin-bottom:18px" id="today-date"></p>
+
+  <div class="card">
+    <div class="section-title">Team A</div>
+    <div class="team-grid">
+      <div><label>Player 1</label><input id="a-p1" placeholder="e.g. Kam" oninput="refreshDealer()"></div>
+      <div><label>Player 2</label><input id="a-p2" placeholder="e.g. Ali" oninput="refreshDealer()"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Team B</div>
+    <div class="team-grid">
+      <div><label>Player 3</label><input id="b-p1" placeholder="e.g. Nima" oninput="refreshDealer()"></div>
+      <div><label>Player 4</label><input id="b-p2" placeholder="e.g. Reza" oninput="refreshDealer()"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <label style="margin-bottom:6px">Max score (first to reach wins)</label>
+    <input id="target-score" type="number" value="1650" min="100" max="9999">
+    <div class="section-title" style="margin-top:8px">Who deals first?</div>
+    <div class="dealer-grid" id="dealer-picker">
+      <div class="dealer-btn" style="color:var(--muted); grid-column:1/-1">Enter player names above</div>
+    </div>
+  </div>
+
+  <button class="btn btn-primary" onclick="createGame()">Start Game 🃏</button>
+
+  <div class="card" style="margin-top:4px">
+    <div class="section-title">Rejoin existing game</div>
+    <div class="join-row">
+      <input id="join-id" type="text" placeholder="Game ID">
+      <button class="btn btn-outline btn-sm" onclick="joinGame()">Join</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ GAME ══════════════════ -->
+<div id="screen-game" class="screen">
+
+  <!-- Winner overlay -->
+  <div id="winner-section" style="display:none">
+    <div class="winner-wrap">
+      <div class="trophy">🏆</div>
+      <div class="winner-team" id="w-team"></div>
+      <div class="winner-players" id="w-players"></div>
+      <div class="final-scores" id="w-score"></div>
+    </div>
+    <button class="btn btn-outline btn-sm" onclick="toggleStats()" style="display:block;width:100%;margin-bottom:10px">📊 Show Results</button>
+    <div class="stats-section" id="stats-section">
+      <div class="stats-grid" id="stats-grid"></div>
+    </div>
+    <button class="btn btn-primary" onclick="restartSamePlayers()">↩ Restart (same players)</button>
+    <button class="btn btn-outline" onclick="showScreen('screen-setup')">New Game</button>
+  </div>
+
+  <!-- Active game -->
+  <div id="active-section">
+    <div class="top-bar">
+      <div class="gid">ID: <span id="gid-lbl"></span> · <span class="dealer-chip" id="dealer-lbl"></span></div>
+      <button class="btn btn-outline btn-sm" onclick="undoRound()">↩ Undo</button>
+    </div>
+
+    <div class="scoreboard" id="scoreboard"></div>
+    <div class="round-lbl" id="round-lbl"></div>
+
+    <!-- Add Round button -->
+    <div class="add-round-wrap">
+      <button class="btn btn-primary" id="add-btn" onclick="openStep1()">+ Add Round</button>
+
+      <!-- Step 1: pick bidding team -->
+      <div id="step1" style="display:none" class="card">
+        <div class="section-title">Which team bid? (Hakem)</div>
+        <div class="team-pick-wrap">
+          <div class="team-pick-card" id="pick-A" onclick="selectBidTeam('A')">
+            <div class="pick-label">Team A</div>
+            <div class="pick-players" id="pick-A-players"></div>
+          </div>
+          <div class="vs-sep">VS</div>
+          <div class="team-pick-card" id="pick-B" onclick="selectBidTeam('B')">
+            <div class="pick-label">Team B</div>
+            <div class="pick-players" id="pick-B-players"></div>
+          </div>
+        </div>
+        <div class="step-nav">
+          <button class="btn btn-outline" onclick="closeRoundInput()" style="padding:10px">Cancel</button>
+          <button class="btn btn-primary" id="step1-next" onclick="goStep2()" style="padding:10px" disabled>Next →</button>
+        </div>
+      </div>
+
+      <!-- Step 2: score entry -->
+      <div id="step2" style="display:none" class="card">
+        <div class="bid-row">
+          <label>Bid:</label>
+          <input id="bid-inp" type="number" placeholder="e.g. 140" min="100" max="200" oninput="updatePreview()">
+        </div>
+        <div class="score-entry">
+          <div class="score-col">
+            <div class="score-col-header bidder" id="bidder-col-lbl">Team A · Hakem</div>
+            <label>Outcome</label>
+            <select id="outcome-sel" class="outcome-select" onchange="updatePreview()">
+              <option value="">— result —</option>
+              <option value="win">✓ Win</option>
+              <option value="kapp">🌟 Win Double (Kapp)</option>
+              <option value="lose">✗ Lose</option>
+              <option value="kapp_against">💀 Lose Double</option>
+            </select>
+          </div>
+          <div class="score-col">
+            <div class="score-col-header defender" id="def-col-lbl">Team B · Defending</div>
+            <label>Points captured</label>
+            <div class="stepper" id="opp-stepper">
+              <button class="stepper-btn" onclick="stepOpp(-5)">−</button>
+              <div class="stepper-val" id="opp-val">0</div>
+              <button class="stepper-btn" onclick="stepOpp(5)">+</button>
+            </div>
+            <div class="stepper-label" id="opp-stepper-label">0 pts</div>
+          </div>
+        </div>
+        <div class="round-preview" id="round-preview"></div>
+        <div class="step-nav">
+          <button class="btn btn-outline" onclick="goStep1()" style="padding:10px">← Back</button>
+          <button class="btn btn-primary" onclick="submitRound()" style="padding:10px">Confirm ✓</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- History -->
+    <div class="card">
+      <div class="section-title">Round History</div>
+      <div class="history-list" id="history-list"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── localStorage-based storage (no server needed) ────────────────────────
+const OUTCOMES_JS = {
+  win:          bid => bid,
+  kapp:         bid => bid * 2,
+  lose:         bid => -bid,
+  kapp_against: bid => -bid * 2,
+};
+function genId() { return Math.random().toString(36).slice(2,8); }
+function lsGet(id) { try { return JSON.parse(localStorage.getItem('shelem_'+id)); } catch(e) { return null; } }
+function lsSave(game) { localStorage.setItem('shelem_'+game.id, JSON.stringify(game)); return game; }
+function calcDeltas(bidderTeam, bid, outcome, oppScore) {
+  const oppTeam = bidderTeam === 'A' ? 'B' : 'A';
+  return { [bidderTeam]: OUTCOMES_JS[outcome](bid), [oppTeam]: outcome === 'kapp' ? 0 : oppScore };
+}
+function recompute(game) {
+  game.teams.A.score = game.teams.B.score = 0;
+  game.finished = false; game.winner = null;
+  for (const r of game.rounds) {
+    for (const k of ['A','B']) game.teams[k].score += r.delta[k];
+  }
+  for (const [k, t] of Object.entries(game.teams)) {
+    if (t.score >= game.target_score && !game.finished) { game.finished = true; game.winner = k; }
+  }
+  return game;
+}
+const API = '';
+let G = null;
+let selectedDealer = null;
+let selectedBidTeam = null;
+let oppScore = 0;
+let editingRound = null;
+let editOppScore = 0;
+
+// ── Screens ───────────────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ── Setup ─────────────────────────────────────────────────────────────────
+function allPlayers() {
+  const raw = [
+    document.getElementById('a-p1').value.trim(),
+    document.getElementById('a-p2').value.trim(),
+    document.getElementById('b-p1').value.trim(),
+    document.getElementById('b-p2').value.trim(),
+  ].filter(Boolean);
+  const seen = new Set();
+  return raw.filter(n => { const k = n.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; });
+}
+
+function refreshDealer() {
+  const players = allPlayers();
+  const picker = document.getElementById('dealer-picker');
+  if (players.length < 2) {
+    picker.innerHTML = '<div class="dealer-btn" style="color:var(--muted);grid-column:1/-1">Enter player names above</div>';
+    selectedDealer = null; return;
+  }
+  if (selectedDealer && !players.includes(selectedDealer)) selectedDealer = null;
+  picker.innerHTML = players.map(p =>
+    `<div class="dealer-btn ${selectedDealer===p?'selected':''}" onclick="selectDealer('${p}')">${p}</div>`
+  ).join('');
+}
+
+function selectDealer(name) {
+  selectedDealer = selectedDealer === name ? null : name;
+  refreshDealer();
+}
+
+async function createGame() {
+  const aP1 = document.getElementById('a-p1').value.trim();
+  const aP2 = document.getElementById('a-p2').value.trim();
+  const bP1 = document.getElementById('b-p1').value.trim();
+  const bP2 = document.getElementById('b-p2').value.trim();
+  if (!aP1 || !aP2 || !bP1 || !bP2) { alert('Enter all 4 player names'); return; }
+  const names = [aP1, aP2, bP1, bP2];
+  if (new Set(names.map(n => n.toLowerCase())).size < 4) { alert('All 4 player names must be unique'); return; }
+  if (!selectedDealer) { alert('Pick a dealer'); return; }
+
+  const id = genId();
+  G = lsSave({ id, created_at: new Date().toISOString(),
+    target_score: parseInt(document.getElementById('target-score').value) || 1650,
+    dealer: selectedDealer,
+    teams: {
+      A: { name: 'Team A', players: [aP1, aP2], score: 0 },
+      B: { name: 'Team B', players: [bP1, bP2], score: 0 },
+    }, rounds: [], finished: false, winner: null });
+  renderGame();
+  showScreen('screen-game');
+}
+
+async function joinGame() {
+  const id = document.getElementById('join-id').value.trim().toLowerCase();
+  if (!id) return;
+  try {
+    G = lsGet(id);
+    if (!G) throw new Error('Game not found');
+    renderGame(); showScreen('screen-game');
+  } catch(e) { alert(e.message); }
+}
+
+// ── Render ────────────────────────────────────────────────────────────────
+function renderGame() {
+  if (!G) return;
+  document.getElementById('gid-lbl').textContent = G.id;
+  document.getElementById('dealer-lbl').textContent = G.dealer ? `🃏 ${G.dealer}` : '';
+  document.getElementById('round-lbl').textContent = `Round ${G.rounds.length + 1}`;
+
+  const entries = Object.entries(G.teams);
+  const maxScore = Math.max(...entries.map(([,t]) => t.score));
+  document.getElementById('scoreboard').innerHTML = entries.map(([k, t]) => {
+    const pct = Math.min(100, Math.max(0, (t.score / G.target_score) * 100));
+    const lead = t.score > 0 && t.score === maxScore;
+    return `<div class="score-box ${lead?'leading':''}">
+      <div class="t-name">${t.name}</div>
+      <div class="t-players">${t.players.join(' & ')}</div>
+      <div class="t-score">${t.score}</div>
+      <div class="t-target">/ ${G.target_score}</div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+
+  // Populate team picker labels
+  if (document.getElementById('pick-A-players')) {
+    document.getElementById('pick-A-players').textContent = G.teams.A.players.join(' & ');
+    document.getElementById('pick-B-players').textContent = G.teams.B.players.join(' & ');
+  }
+
+  renderHistory();
+
+  if (G.finished && G.winner) {
+    const wt = G.teams[G.winner];
+    const lt = G.teams[G.winner==='A'?'B':'A'];
+    document.getElementById('w-team').textContent = `${wt.name} Wins! 🎉`;
+    document.getElementById('w-players').textContent = wt.players.join(' & ');
+    document.getElementById('w-score').textContent = `${wt.score} – ${lt.score}`;
+    document.getElementById('winner-section').style.display = 'block';
+    document.getElementById('active-section').style.display = 'none';
+    renderStats();
+  } else {
+    document.getElementById('winner-section').style.display = 'none';
+    document.getElementById('active-section').style.display = 'block';
+  }
+}
+
+function renderHistory() {
+  const list = document.getElementById('history-list');
+  if (!G.rounds.length) {
+    list.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;padding:8px 0">No rounds yet</div>';
+    return;
+  }
+  const latestIdx = G.rounds.length - 1;
+  const OUTCOME_LABELS = { win:'Win', kapp:'Kapp 🌟', lose:'Lose', kapp_against:'Kapp 💀' };
+
+  list.innerHTML = [...G.rounds].reverse().map((r, ri) => {
+    const absIdx = G.rounds.length - 1 - ri;
+    const isLatest = absIdx === latestIdx;
+    const isEditing = editingRound === r.round;
+    const bKey = r.bidder_team;
+    const dKey = bKey === 'A' ? 'B' : 'A';
+    const bDelta = r.delta[bKey];
+    const dDelta = r.delta[dKey];
+
+    if (isEditing) {
+      return `<div class="round-row">
+        <div class="edit-inline">
+          <div class="bid-row" style="margin-bottom:8px">
+            <label>Bid:</label>
+            <input id="edit-bid" type="number" value="${r.bid}" style="margin-bottom:0;flex:1">
+          </div>
+          <div class="score-entry">
+            <div class="score-col">
+              <div class="score-col-header bidder">${G.teams[bKey].name} · Hakem</div>
+              <label>Outcome</label>
+              <select id="edit-outcome" style="margin-bottom:0">
+                ${['win','kapp','lose','kapp_against'].map(o =>
+                  `<option value="${o}" ${o===r.outcome?'selected':''}>${OUTCOME_LABELS[o]}</option>`
+                ).join('')}
+              </select>
+            </div>
+            <div class="score-col">
+              <div class="score-col-header defender">${G.teams[dKey].name} · Defending</div>
+              <label>Points captured</label>
+              <div class="stepper">
+                <button class="stepper-btn" onclick="stepEdit(-5)">−</button>
+                <div class="stepper-val" id="edit-opp-val">${editOppScore}</div>
+                <button class="stepper-btn" onclick="stepEdit(5)">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="edit-nav">
+            <button class="btn-cancel-edit" onclick="cancelEdit()">✕ Cancel</button>
+            <button class="btn-save-edit" onclick="saveEdit(${r.round}, '${bKey}')">✓ Save</button>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    return `<div class="round-row">
+      <div class="rnum">${r.round}</div>
+      <div class="r-outcome">
+        <div class="outcome-name">${G.teams[bKey].name} ${r.kapp?'<span class="kapp-badge">KAPP</span>':''}</div>
+        <div class="bid-info">${OUTCOME_LABELS[r.outcome]} · bid ${r.bid}</div>
+      </div>
+      <div class="delta-cell ${bDelta>=0?'pos':'neg'}">${bDelta>0?'+':''}${bDelta}<span class="team-tiny">${G.teams[bKey].name}</span></div>
+      <div class="delta-cell ${dDelta>=0?'pos':'neg'}">${dDelta>0?'+':''}${dDelta}<span class="team-tiny">${G.teams[dKey].name}</span></div>
+      <div>${isLatest ? `<button class="edit-btn" onclick="startEdit(${r.round}, ${r.opponent_score})">✏️</button>` : ''}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Round Input ───────────────────────────────────────────────────────────
+function openStep1() {
+  selectedBidTeam = null;
+  document.getElementById('add-btn').style.display = 'none';
+  document.getElementById('step1').style.display = 'block';
+  document.getElementById('step2').style.display = 'none';
+  // refresh team labels
+  document.getElementById('pick-A-players').textContent = G.teams.A.players.join(' & ');
+  document.getElementById('pick-B-players').textContent = G.teams.B.players.join(' & ');
+  document.getElementById('pick-A').classList.remove('selected');
+  document.getElementById('pick-B').classList.remove('selected');
+  document.getElementById('step1-next').disabled = true;
+}
+
+function closeRoundInput() {
+  document.getElementById('add-btn').style.display = 'block';
+  document.getElementById('step1').style.display = 'none';
+  document.getElementById('step2').style.display = 'none';
+  selectedBidTeam = null; oppScore = 0;
+}
+
+function selectBidTeam(key) {
+  selectedBidTeam = key;
+  document.getElementById('pick-A').classList.toggle('selected', key==='A');
+  document.getElementById('pick-B').classList.toggle('selected', key==='B');
+  document.getElementById('step1-next').disabled = false;
+}
+
+function goStep2() {
+  if (!selectedBidTeam) return;
+  const dKey = selectedBidTeam === 'A' ? 'B' : 'A';
+  document.getElementById('bidder-col-lbl').textContent = `${G.teams[selectedBidTeam].name} · Hakem`;
+  document.getElementById('def-col-lbl').textContent = `${G.teams[dKey].name} · Defending`;
+  document.getElementById('bid-inp').value = '';
+  document.getElementById('outcome-sel').value = '';
+  oppScore = 0;
+  document.getElementById('opp-val').textContent = '0';
+  document.getElementById('opp-stepper-label').textContent = '0 pts';
+  document.getElementById('round-preview').className = 'round-preview';
+  document.getElementById('step1').style.display = 'none';
+  document.getElementById('step2').style.display = 'block';
+}
+
+function goStep1() {
+  document.getElementById('step1').style.display = 'block';
+  document.getElementById('step2').style.display = 'none';
+}
+
+function stepOpp(delta) {
+  oppScore = Math.max(0, Math.min(200, oppScore + delta));
+  document.getElementById('opp-val').textContent = oppScore;
+  document.getElementById('opp-stepper-label').textContent = `${oppScore} pts`;
+  updatePreview();
+}
+
+function outcomeLabel(o) {
+  return { win:'✓ Win', kapp:'🌟 Kapp', lose:'✗ Lose', kapp_against:'💀 Kapp against' }[o] || o;
+}
+
+function updatePreview() {
+  const bid = parseInt(document.getElementById('bid-inp').value);
+  const outcome = document.getElementById('outcome-sel').value;
+  const preview = document.getElementById('round-preview');
+  if (!bid || !outcome || !selectedBidTeam) { preview.className = 'round-preview'; return; }
+
+  const dKey = selectedBidTeam === 'A' ? 'B' : 'A';
+  const deltas = {
+    win: bid, kapp: bid*2, lose: -bid, kapp_against: -bid*2
+  };
+  const bDelta = deltas[outcome];
+  const dDelta = outcome === 'kapp' ? 0 : oppScore;
+
+  preview.className = 'round-preview show';
+  preview.innerHTML = `
+    <span class="preview-outcome ${bDelta>=0?'pos':'neg'}">${outcomeLabel(outcome)}</span>
+    <span class="preview-deltas">
+      <span class="preview-delta">
+        <span class="dlabel">${G.teams[selectedBidTeam].name} </span>
+        <span class="dval ${bDelta>=0?'pos':'neg'}">${bDelta>0?'+':''}${bDelta}</span>
+      </span>
+      <span class="preview-delta">
+        <span class="dlabel">${G.teams[dKey].name} </span>
+        <span class="dval pos">+${dDelta}</span>
+      </span>
+    </span>`;
+}
+
+async function submitRound() {
+  const bid = parseInt(document.getElementById('bid-inp').value);
+  const outcome = document.getElementById('outcome-sel').value;
+  if (!bid || bid < 100 || bid > 200) { alert('Bid must be 100–200'); return; }
+  if (!outcome) { alert('Select an outcome'); return; }
+
+  try {
+    const d = calcDeltas(selectedBidTeam, bid, outcome, oppScore);
+    G.rounds.push({ round: G.rounds.length+1, bidder_team: selectedBidTeam, bid, outcome, opponent_score: oppScore, delta: d, success: d[selectedBidTeam]>0, kapp: ['kapp','kapp_against'].includes(outcome) });
+    for (const k of ['A','B']) G.teams[k].score += d[k];
+    for (const [k,t] of Object.entries(G.teams)) { if (t.score >= G.target_score && !G.finished) { G.finished=true; G.winner=k; } }
+    G = lsSave(G);
+    closeRoundInput();
+    renderGame();
+  } catch(e) { alert(e.message); }
+}
+
+async function undoRound() {
+  if (!G?.rounds?.length) { alert('Nothing to undo'); return; }
+  if (!confirm('Undo last round?')) return;
+  const last = G.rounds.pop();
+  for (const k of ['A','B']) G.teams[k].score -= last.delta[k];
+  G.finished = false; G.winner = null;
+  G = lsSave(G); editingRound = null; renderGame();
+}
+
+// ── Inline Edit ───────────────────────────────────────────────────────────
+function startEdit(roundNum, currentOpp) {
+  editingRound = roundNum; editOppScore = currentOpp;
+  renderHistory();
+}
+function cancelEdit() { editingRound = null; renderHistory(); }
+
+function stepEdit(delta) {
+  editOppScore = Math.max(0, Math.min(200, editOppScore + delta));
+  document.getElementById('edit-opp-val').textContent = editOppScore;
+}
+
+async function saveEdit(roundNum, bidderTeam) {
+  const bid = parseInt(document.getElementById('edit-bid').value);
+  const outcome = document.getElementById('edit-outcome').value;
+  if (!bid || !outcome) { alert('Fill in all fields'); return; }
+  try {
+    const d = calcDeltas(bidderTeam, bid, outcome, editOppScore);
+    const idx = roundNum - 1;
+    G.rounds[idx] = { round: roundNum, bidder_team: bidderTeam, bid, outcome, opponent_score: editOppScore, delta: d, success: d[bidderTeam]>0, kapp: ['kapp','kapp_against'].includes(outcome) };
+    G = lsSave(recompute(G)); editingRound = null; renderGame();
+  } catch(e) { alert(e.message); }
+}
+
+// ── Stats / Winner ────────────────────────────────────────────────────────
+function renderStats() {
+  const r = G.rounds;
+  const w = G.winner;
+  const wt = G.teams[w], lt = G.teams[w==='A'?'B':'A'];
+  document.getElementById('stats-grid').innerHTML = `
+    <div class="stat-box"><div class="slabel">Total Rounds</div><div class="sval">${r.length}</div></div>
+    <div class="stat-box"><div class="slabel">Kapps</div><div class="sval">${r.filter(x=>x.outcome==='kapp').length}</div></div>
+    <div class="stat-box"><div class="slabel">${wt.name} wins</div><div class="sval">${r.filter(x=>x.success&&x.bidder_team===w).length}</div></div>
+    <div class="stat-box"><div class="slabel">${lt.name} wins</div><div class="sval">${r.filter(x=>x.success&&x.bidder_team!==w).length}</div></div>`;
+}
+function toggleStats() { document.getElementById('stats-section').classList.toggle('show'); }
+
+async function restartSamePlayers() {
+  const id = genId();
+  G = lsSave({ id, created_at: new Date().toISOString(),
+    target_score: G.target_score, dealer: G.dealer,
+    teams: {
+      A: { name: 'Team A', players: G.teams.A.players, score: 0 },
+      B: { name: 'Team B', players: G.teams.B.players, score: 0 },
+    }, rounds: [], finished: false, winner: null });
+  editingRound = null; renderGame(); showScreen('screen-game');
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+document.getElementById('today-date').textContent =
+  new Date().toLocaleDateString('en-AU', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+if (window.Telegram?.WebApp) { Telegram.WebApp.ready(); Telegram.WebApp.expand(); }
+
+const urlParams = new URLSearchParams(window.location.search);
+const gp = urlParams.get('game');
+if (gp) {
+  const g = lsGet(gp);
+  if (g) { G = g; renderGame(); showScreen('screen-game'); }
+}
+</script>
+</body>
+</html>
