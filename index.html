@@ -4,24 +4,30 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Shelem 🃏</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
   :root {
-    --bg: #0f0f1a;
-    --card: #1a1a2e;
-    --accent: #e94560;
-    --accent2: #0f3460;
-    --text: #eaeaea;
-    --muted: #666;
-    --green: #4caf50;
-    --red: #f44336;
-    --gold: #ffd700;
+    --bg: #ffecd1;
+    --card: #fff5e6;
+    --accent: #3E000C;
+    --accent2: #f5dbb8;
+    --text: #3E000C;
+    --muted: #8a6a4a;
+    --green: #2e6b1e;
+    --red: #9a1010;
+    --gold: #8a5c00;
     --radius: 12px;
+    --border: #e0c9a8;
+    --input-bg: #fff0d6;
+    --input-border: #d4b48a;
+    --shadow: 0 1px 3px rgba(62,0,12,0.08);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: var(--bg);
+    background-color: var(--bg);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23ffecd1'/%3E%3Cpath d='M40 0L50 10L40 20L30 10Z' fill='none' stroke='%23e0c0a0' stroke-width='0.5'/%3E%3Cpath d='M0 40L10 50L0 60' fill='none' stroke='%23e0c0a0' stroke-width='0.5'/%3E%3Cpath d='M80 40L70 50L80 60' fill='none' stroke='%23e0c0a0' stroke-width='0.5'/%3E%3Cpath d='M40 60L50 70L40 80L30 70Z' fill='none' stroke='%23e0c0a0' stroke-width='0.5'/%3E%3Ccircle cx='40' cy='40' r='6' fill='none' stroke='%23d4aa80' stroke-width='0.5'/%3E%3Ccircle cx='40' cy='40' r='2' fill='%23d4aa80' opacity='0.3'/%3E%3Cpath d='M40 34L46 40L40 46L34 40Z' fill='none' stroke='%23c8986a' stroke-width='0.4'/%3E%3Cpath d='M10 10L15 15M70 10L65 15M10 70L15 65M70 70L65 65' stroke='%23d4aa80' stroke-width='0.4'/%3E%3Cpath d='M0 0L8 8M72 0L80 8M0 72L8 80M72 72L80 80' stroke='%23ddb890' stroke-width='0.3'/%3E%3Cpath d='M20 0v4M60 0v4M20 76v4M60 76v4M0 20h4M0 60h4M76 20h4M76 60h4' stroke='%23d4aa80' stroke-width='0.4'/%3E%3Cpath d='M36 10h8M36 70h8M10 36v8M70 36v8' stroke='%23c8986a' stroke-width='0.3'/%3E%3C/svg%3E");
+    background-repeat: repeat;
     color: var(--text);
     min-height: 100vh;
     padding: 14px;
@@ -29,9 +35,8 @@
   .screen { display: none; }
   .screen.active { display: block; }
 
-  /* ─── Shared ─────────────────────────────────────────── */
-  h1 { text-align: center; font-size: 1.5rem; margin-bottom: 2px; }
-  .card { background: var(--card); border-radius: var(--radius); padding: 14px; margin-bottom: 10px; }
+  h1 { text-align: center; font-size: 1.8rem; margin-bottom: 2px; }
+  .card { background: var(--card); border-radius: var(--radius); padding: 14px; margin-bottom: 10px; box-shadow: var(--shadow); }
   .section-title { font-size: 0.68rem; text-transform: uppercase; color: var(--muted); letter-spacing: 1px; margin-bottom: 8px; }
   label { display: block; font-size: 0.78rem; color: var(--muted); margin-bottom: 3px; }
 
@@ -42,88 +47,319 @@
   }
   .btn:active { opacity: 0.75; }
   .btn-primary { background: var(--accent); color: #fff; }
-  .btn-outline { background: transparent; border: 1px solid #444; color: var(--text); }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
   .btn-sm { padding: 8px 14px; font-size: 0.85rem; width: auto; display: inline-block; margin-bottom: 0; }
 
   input, select {
     width: 100%; padding: 11px; border-radius: 8px;
-    border: 1px solid #2a2a3e; background: #0d1020;
+    border: 1px solid var(--input-border); background: var(--input-bg);
     color: var(--text); font-size: 0.95rem; margin-bottom: 8px;
     -webkit-appearance: none;
   }
   input:focus, select:focus { outline: none; border-color: var(--accent); }
 
-  /* ─── Setup ──────────────────────────────────────────── */
-  .team-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .team-grid input { margin-bottom: 0; }
-
-  .dealer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .dealer-btn {
-    padding: 11px 8px; text-align: center; border-radius: 8px;
-    border: 1px solid #2a2a3e; cursor: pointer; font-size: 0.9rem;
-    background: #0d1020; color: var(--text); transition: all 0.15s;
+  /* ─── Circular Table (flex layout) ──────────────────────── */
+  .table-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin: 0 auto 12px;
   }
-  .dealer-btn.selected { border-color: var(--accent); background: rgba(233,69,96,0.2); font-weight: 700; }
-
-  .join-row { display: flex; gap: 8px; }
-  .join-row input { margin-bottom: 0; flex: 1; font-family: monospace; }
-
-  /* ─── Scoreboard ─────────────────────────────────────── */
-  .scoreboard { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 6px; }
-  .score-box {
-    background: var(--accent2); border-radius: var(--radius);
-    padding: 12px; text-align: center; border: 2px solid transparent;
-    transition: border-color 0.3s;
+  .table-mid {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    width: 100%;
   }
-  .score-box.leading { border-color: var(--gold); }
-  .score-box .t-name { font-size: 0.7rem; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
-  .score-box .t-players { font-size: 0.68rem; color: #555; margin: 2px 0 6px; }
-  .score-box .t-score { font-size: 2.1rem; font-weight: 800; line-height: 1; }
-  .score-box .t-target { font-size: 0.62rem; color: var(--muted); margin-top: 3px; }
-  .progress-bar { height: 3px; background: #222; border-radius: 2px; margin-top: 6px; overflow: hidden; }
-  .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.4s; }
-  .round-lbl { text-align: center; font-size: 0.72rem; color: var(--muted); margin-bottom: 10px; }
+  .table-center {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #e8d4b0 0%, #d4b88a 100%);
+    border: 3px solid #c4a070;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.06);
+    flex-shrink: 0;
+  }
+  .table-label { font-size: 0.55rem; color: #8a6a4a; text-transform: uppercase; letter-spacing: 1px; }
 
-  /* ─── Add Round button ───────────────────────────────── */
+  .seat {
+    display: flex; flex-direction: column; align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+    min-width: 70px;
+  }
+  .seat:active { transform: scale(0.95); }
+
+  .seat-avatar {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: var(--input-bg);
+    border: 2.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+    transition: all 0.25s;
+    position: relative;
+  }
+  .seat.has-name .seat-avatar { border-color: #b89870; background: #f5e0c0; }
+  .seat.is-dealer .seat-avatar { border-color: var(--gold); box-shadow: 0 0 12px rgba(62,0,12,0.25); }
+  .seat.is-dealer .dealer-badge { display: block; }
+
+  .dealer-badge {
+    display: none;
+    position: absolute;
+    bottom: -4px; right: -4px;
+    background: var(--gold);
+    color: #fff;
+    font-size: 0.55rem;
+    font-weight: 800;
+    padding: 1px 4px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+  }
+
+  .seat-name {
+    margin-top: 4px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-align: center;
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text);
+  }
+  .seat-name.empty { color: var(--muted); font-weight: 400; font-style: italic; }
+
+  .seat-team-tag {
+    font-size: 0.55rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 1px;
+    font-weight: 600;
+  }
+  .team-a-color { color: #8B0015; }
+  .team-b-color { color: #1B3A6B; }
+  .team-a-bg { background: rgba(139,0,21,0.1); }
+  .team-b-bg { background: rgba(27,58,107,0.1); }
+  .team-a-ring { border-color: #8B0015 !important; }
+  .team-b-ring { border-color: #1B3A6B !important; }
+
+  /* ─── Name picker modal ─────────────────────────────── */
+  .name-modal {
+    display: none;
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.35);
+    z-index: 100;
+    align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .name-modal.show { display: flex; }
+  .name-modal-box {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 20px;
+    width: 100%;
+    max-width: 320px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+  }
+  .name-modal-box h3 { font-size: 1rem; margin-bottom: 12px; text-align: center; }
+
+  .preset-names {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-bottom: 12px; justify-content: center;
+  }
+  .preset-chip {
+    padding: 7px 14px; border-radius: 20px;
+    border: 1px solid var(--border); background: var(--input-bg);
+    color: var(--text); font-size: 0.85rem; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .preset-chip:active { opacity: 0.7; }
+  .preset-chip.taken { opacity: 0.3; pointer-events: none; text-decoration: line-through; }
+  .preset-chip.selected { border-color: var(--accent); background: rgba(62,0,12,0.08); font-weight: 600; }
+
+  .or-divider {
+    text-align: center; font-size: 0.7rem; color: var(--muted);
+    margin: 8px 0; text-transform: uppercase; letter-spacing: 1px;
+  }
+
+  .name-modal-actions { display: flex; gap: 8px; margin-top: 8px; }
+  .name-modal-actions .btn { flex: 1; margin-bottom: 0; padding: 11px; }
+
+  /* ─── Dealer picker instructions ───────────────────── */
+  .dealer-chips {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .dealer-chip-btn {
+    padding: 12px 8px;
+    text-align: center;
+    border-radius: 8px;
+    border: 2px solid var(--border);
+    background: var(--input-bg);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .dealer-chip-btn:active { opacity: 0.7; }
+  .dealer-chip-btn.selected {
+    border-color: var(--gold);
+    background: rgba(62,0,12,0.06);
+    font-weight: 700;
+  }
+  .dealer-chip-btn .chip-team {
+    font-size: 0.6rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+  }
+
+  /* ─── Scoreboard (two columns, flex) ──────────────── */
+  .scoreboard {
+    display: flex;
+    margin-bottom: 0;
+  }
+  .score-col-wrap {
+    flex: 1;
+    text-align: center;
+    padding: 10px 6px 6px;
+  }
+  .score-col-wrap.left { background: rgba(139,0,21,0.08); border-radius: var(--radius) 0 0 0; }
+  .score-col-wrap.right { background: rgba(27,58,107,0.08); border-radius: 0 var(--radius) 0 0; }
+  .t-name { font-size: 0.65rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .t-players { font-size: 0.65rem; color: var(--muted); margin: 1px 0 4px; }
+  .t-score { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+
+  /* ─── MK Progress Bar ────────────────────────────────── */
+  .mk-bar-wrap {
+    padding: 0 6px 8px;
+    background: linear-gradient(to right, rgba(139,0,21,0.08), rgba(27,58,107,0.08));
+  }
+  .mk-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    position: relative;
+    overflow: hidden;
+  }
+  .mk-fill-left {
+    position: absolute;
+    top: 0; bottom: 0;
+    right: 50%;
+    background: #8B0015;
+    border-radius: 3px 0 0 3px;
+    transition: width 0.4s;
+  }
+  .mk-fill-right {
+    position: absolute;
+    top: 0; bottom: 0;
+    left: 50%;
+    background: #1B3A6B;
+    border-radius: 0 3px 3px 0;
+    transition: width 0.4s;
+  }
+  .mk-center {
+    position: absolute;
+    top: -1px; bottom: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    background: var(--text);
+    border-radius: 1px;
+    z-index: 1;
+  }
+  .mk-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.58rem;
+    color: var(--muted);
+    margin-top: 3px;
+    padding: 0 2px;
+  }
+
+  .round-lbl { text-align: center; font-size: 0.72rem; color: var(--muted); margin-bottom: 10px; padding-top: 6px; }
+
+  /* ─── Two-column history (table) ──────────────────── */
+  .history-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    table-layout: fixed;
+  }
+  .history-table th {
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    padding: 6px 4px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    width: 50%;
+  }
+  .history-table td {
+    text-align: center;
+    padding: 8px 4px;
+    font-weight: 700;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    vertical-align: top;
+  }
+  .history-table tr:last-child td { border-bottom: none; }
+  .history-table td:first-child { border-right: 1px solid var(--border); }
+  .history-table .round-info {
+    font-size: 0.6rem;
+    font-weight: 400;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+  .history-wrap { max-height: 350px; overflow-y: auto; }
+  .pos { color: var(--green); }
+  .neg { color: var(--red); }
+  .zero { color: var(--muted); }
+  .shelem-badge { font-size: 0.55rem; background: #d4a017; color: #fff; padding: 1px 4px; border-radius: 3px; font-weight: 700; }
+  .edit-btn { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 0.75rem; padding: 2px; position: absolute; top: 4px; right: 4px; }
+  .edit-btn:hover { color: var(--text); }
+
+  /* ─── Add Round ───────────────────────────────────────── */
   .add-round-wrap { margin-bottom: 10px; }
 
-  /* ─── Round input: step 1 — team picker ─────────────── */
   .team-pick-wrap {
     display: grid; grid-template-columns: 1fr 36px 1fr; gap: 6px;
     align-items: stretch; margin-bottom: 12px;
   }
   .team-pick-card {
-    border: 2px solid #2a2a3e; border-radius: var(--radius);
+    border: 2px solid var(--border); border-radius: var(--radius);
     padding: 14px 10px; text-align: center; cursor: pointer;
-    transition: all 0.18s; background: #0d1020;
+    transition: all 0.18s; background: var(--input-bg);
   }
   .team-pick-card:active { opacity: 0.8; }
-  .team-pick-card.selected { border-color: var(--accent); background: rgba(233,69,96,0.12); }
+  .team-pick-card.selected { border-color: var(--accent); background: rgba(62,0,12,0.08); }
   .team-pick-card .pick-label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
   .team-pick-card .pick-players { font-size: 0.85rem; font-weight: 600; line-height: 1.4; }
   .vs-sep { display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 0.75rem; font-weight: 700; }
 
-  /* ─── Round input: step 2 — score entry ─────────────── */
   .score-entry { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-  .score-col { }
   .score-col-header {
     font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
     letter-spacing: 1px; margin-bottom: 8px; padding: 6px 8px;
     border-radius: 6px; text-align: center;
   }
-  .score-col-header.bidder { background: rgba(233,69,96,0.18); color: #e94560; }
-  .score-col-header.defender { background: rgba(15,52,96,0.6); color: #7ab8f5; }
+  .score-col-header.bidder { background: rgba(139,0,21,0.1); color: #8B0015; }
+  .score-col-header.defender { background: rgba(27,58,107,0.1); color: #1B3A6B; }
 
-  /* Outcome dropdown styled options */
-  .outcome-select { margin-bottom: 0; }
-
-  /* Stepper */
   .stepper {
-    display: flex; align-items: center; border: 1px solid #2a2a3e;
-    border-radius: 8px; overflow: hidden; background: #0d1020;
+    display: flex; align-items: center; border: 1px solid var(--input-border);
+    border-radius: 8px; overflow: hidden; background: var(--input-bg);
   }
   .stepper-btn {
-    flex: 0 0 44px; padding: 11px; border: none; background: #1a1a2e;
+    flex: 0 0 44px; padding: 11px; border: none; background: var(--border);
     color: var(--text); font-size: 1.2rem; cursor: pointer;
     transition: background 0.15s;
   }
@@ -134,26 +370,22 @@
   }
   .stepper-label { font-size: 0.62rem; color: var(--muted); text-align: center; margin-top: 4px; }
 
-  /* Bid input row */
   .bid-row { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
   .bid-row label { margin: 0; white-space: nowrap; font-size: 0.78rem; color: var(--muted); }
-  .bid-row input { margin-bottom: 0; flex: 1; }
+  .bid-row select { margin-bottom: 0; flex: 1; }
 
-  /* Preview */
   .round-preview {
-    display: none; background: #0d1020; border-radius: 8px;
+    display: none; background: var(--input-bg); border-radius: 8px;
     padding: 10px 12px; margin-bottom: 10px; font-size: 0.85rem;
   }
   .round-preview.show { display: flex; justify-content: space-between; align-items: center; }
   .preview-outcome { font-weight: 700; }
   .preview-deltas { display: flex; gap: 14px; }
-  .preview-delta { }
   .preview-delta .dlabel { font-size: 0.68rem; color: var(--muted); }
   .preview-delta .dval { font-weight: 700; font-size: 0.95rem; }
   .pos { color: var(--green); }
   .neg { color: var(--red); }
 
-  /* Step nav */
   .step-nav { display: flex; gap: 8px; }
   .step-nav .btn { flex: 1; margin-bottom: 0; }
 
@@ -162,26 +394,24 @@
   .round-row {
     display: grid; grid-template-columns: 22px 1fr 1fr 1fr 28px;
     gap: 4px; align-items: center;
-    padding: 8px 2px; border-bottom: 1px solid #1a1a2e; font-size: 0.8rem;
+    padding: 8px 2px; border-bottom: 1px solid var(--border); font-size: 0.8rem;
   }
   .round-row:last-child { border-bottom: none; }
   .rnum { color: var(--muted); font-size: 0.7rem; }
-  .r-outcome { }
   .r-outcome .outcome-name { font-weight: 600; font-size: 0.78rem; }
   .r-outcome .bid-info { font-size: 0.68rem; color: var(--muted); }
-  .kapp-badge { font-size: 0.58rem; background: var(--gold); color: #000; padding: 1px 4px; border-radius: 3px; }
+  .r-dealer-tag { font-size: 0.58rem; color: var(--accent); }
+  .shelem-badge { font-size: 0.58rem; background: #d4a017; color: #fff; padding: 1px 4px; border-radius: 3px; font-weight: 700; }
   .delta-cell { text-align: right; font-weight: 700; }
   .delta-cell .team-tiny { display: block; font-size: 0.62rem; font-weight: 400; color: var(--muted); }
   .edit-btn { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 0.82rem; padding: 4px; }
   .edit-btn:hover { color: var(--text); }
 
-  /* Edit inline */
-  .edit-inline { grid-column: 1/-1; background: #14102a; border-radius: 8px; padding: 10px; margin: 4px 0; }
-  .edit-inline .score-entry { margin-bottom: 8px; }
+  .edit-inline { flex: 1; background: var(--input-bg); border-radius: 8px; padding: 10px; margin: 4px 6px; }
   .edit-nav { display: flex; gap: 6px; }
   .edit-nav button { flex: 1; padding: 8px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.82rem; font-weight: 600; }
-  .btn-save-edit { background: var(--green); color: #fff; }
-  .btn-cancel-edit { background: #333; color: var(--text); }
+  .btn-save-edit { background: var(--accent); color: #fff; }
+  .btn-cancel-edit { background: var(--border); color: var(--accent); }
 
   /* ─── Winner ─────────────────────────────────────────── */
   .winner-wrap { text-align: center; padding: 28px 0 18px; }
@@ -192,15 +422,66 @@
   .stats-section { display: none; margin-bottom: 14px; }
   .stats-section.show { display: block; }
   .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .stat-box { background: var(--card); border-radius: var(--radius); padding: 10px; }
+  .stat-box { background: var(--card); border-radius: var(--radius); padding: 10px; box-shadow: var(--shadow); }
   .stat-box .slabel { font-size: 0.68rem; color: var(--muted); margin-bottom: 3px; }
   .stat-box .sval { font-size: 1.1rem; font-weight: 700; }
 
-  /* Top bar */
   .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-  .gid { font-size: 0.7rem; color: var(--muted); }
-  .gid span { font-family: monospace; color: #aaa; }
-  .dealer-chip { font-size: 0.7rem; color: var(--muted); }
+
+  /* ─── Menu button ──────────────────────────────────── */
+  .menu-btn {
+    background: none; border: none; cursor: pointer;
+    color: var(--text); font-size: 1.1rem; padding: 6px 8px;
+    border-radius: 6px; transition: background 0.15s;
+    display: flex; flex-direction: column; gap: 3px; align-items: center;
+    justify-content: center; width: 32px; height: 32px;
+  }
+  .menu-btn:active { background: var(--border); }
+  .menu-dot {
+    width: 4px; height: 4px; border-radius: 50%;
+    background: var(--text);
+  }
+
+  /* ─── Bottom sheet ─────────────────────────────────── */
+  .sheet-overlay {
+    display: none;
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.3);
+    z-index: 200;
+  }
+  .sheet-overlay.show { display: block; }
+  .sheet {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--card);
+    border-radius: 16px 16px 0 0;
+    padding: 12px 16px 24px;
+    z-index: 201;
+    transform: translateY(100%);
+    transition: transform 0.25s ease-out;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+  }
+  .sheet.show { transform: translateY(0); }
+  .sheet-handle {
+    width: 36px; height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 0 auto 14px;
+  }
+  .sheet-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text);
+    transition: background 0.15s;
+  }
+  .sheet-item:active { background: var(--input-bg); }
+  .sheet-item i { width: 20px; text-align: center; color: var(--muted); }
+  .sheet-item.danger { color: var(--red); }
+  .sheet-item.danger i { color: var(--red); }
 </style>
 </head>
 <body>
@@ -208,40 +489,38 @@
 <!-- ══════════════════ SETUP ══════════════════ -->
 <div id="screen-setup" class="screen active">
   <h1>🃏 Shelem</h1>
-  <p style="text-align:center; color:var(--muted); font-size:0.85rem; margin-bottom:18px" id="today-date"></p>
+  <p style="text-align:center; color:#b8a080; font-size:0.72rem; margin-bottom:14px" id="today-date"></p>
 
   <div class="card">
-    <div class="section-title">Team A</div>
-    <div class="team-grid">
-      <div><label>Player 1</label><input id="a-p1" placeholder="e.g. Kam" oninput="refreshDealer()"></div>
-      <div><label>Player 2</label><input id="a-p2" placeholder="e.g. Ali" oninput="refreshDealer()"></div>
+    <div class="section-title">Tap a seat to add a player</div>
+    <div class="table-wrap" id="setup-table">
+      <div class="table-center"><span class="table-label">Shelem</span></div>
     </div>
   </div>
 
-  <div class="card">
-    <div class="section-title">Team B</div>
-    <div class="team-grid">
-      <div><label>Player 3</label><input id="b-p1" placeholder="e.g. Nima" oninput="refreshDealer()"></div>
-      <div><label>Player 4</label><input id="b-p2" placeholder="e.g. Reza" oninput="refreshDealer()"></div>
-    </div>
+  <div class="card" id="dealer-card" style="display:none">
+    <div class="section-title">Who deals first?</div>
+    <div class="dealer-chips" id="dealer-chips"></div>
   </div>
 
   <div class="card">
-    <label style="margin-bottom:6px">Max score (first to reach wins)</label>
-    <input id="target-score" type="number" value="1650" min="100" max="9999">
-    <div class="section-title" style="margin-top:8px">Who deals first?</div>
-    <div class="dealer-grid" id="dealer-picker">
-      <div class="dealer-btn" style="color:var(--muted); grid-column:1/-1">Enter player names above</div>
-    </div>
+    <label style="margin-bottom:6px">First to reach this score wins</label>
+    <select id="target-score"></select>
   </div>
 
-  <button class="btn btn-primary" onclick="createGame()">Start Game 🃏</button>
+  <button class="btn btn-primary" id="start-btn" onclick="createGame()" disabled>Start Game 🃏</button>
+</div>
 
-  <div class="card" style="margin-top:4px">
-    <div class="section-title">Rejoin existing game</div>
-    <div class="join-row">
-      <input id="join-id" type="text" placeholder="Game ID">
-      <button class="btn btn-outline btn-sm" onclick="joinGame()">Join</button>
+<!-- ══════════════════ NAME MODAL ══════════════════ -->
+<div class="name-modal" id="name-modal">
+  <div class="name-modal-box">
+    <h3 id="modal-title">Player Name</h3>
+    <div class="preset-names" id="preset-names"></div>
+    <div class="or-divider">or type custom</div>
+    <input id="modal-name-input" type="text" placeholder="Custom name..." maxlength="20" autocomplete="off">
+    <div class="name-modal-actions">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmName()">Done</button>
     </div>
   </div>
 </div>
@@ -249,7 +528,6 @@
 <!-- ══════════════════ GAME ══════════════════ -->
 <div id="screen-game" class="screen">
 
-  <!-- Winner overlay -->
   <div id="winner-section" style="display:none">
     <div class="winner-wrap">
       <div class="trophy">🏆</div>
@@ -257,107 +535,96 @@
       <div class="winner-players" id="w-players"></div>
       <div class="final-scores" id="w-score"></div>
     </div>
-    <button class="btn btn-outline btn-sm" onclick="toggleStats()" style="display:block;width:100%;margin-bottom:10px">📊 Show Results</button>
+    <button class="btn btn-outline btn-sm" onclick="toggleStats()" style="display:block;width:100%;margin-bottom:10px">Show Results</button>
     <div class="stats-section" id="stats-section">
       <div class="stats-grid" id="stats-grid"></div>
     </div>
-    <button class="btn btn-primary" onclick="restartSamePlayers()">↩ Restart (same players)</button>
+    <button class="btn btn-primary" onclick="restartSamePlayers()">Restart (same players)</button>
     <button class="btn btn-outline" onclick="showScreen('screen-setup')">New Game</button>
   </div>
 
-  <!-- Active game -->
   <div id="active-section">
     <div class="top-bar">
-      <div class="gid">ID: <span id="gid-lbl"></span> · <span class="dealer-chip" id="dealer-lbl"></span></div>
+      <button class="menu-btn" onclick="openSheet()">
+        <span class="menu-dot"></span>
+        <span class="menu-dot"></span>
+        <span class="menu-dot"></span>
+      </button>
       <button class="btn btn-outline btn-sm" onclick="undoRound()">↩ Undo</button>
     </div>
 
-    <div class="scoreboard" id="scoreboard"></div>
+    <div class="card" style="padding:0; overflow:hidden">
+      <div class="scoreboard" id="scoreboard"></div>
+      <div class="mk-bar-wrap" id="mk-bar-wrap"></div>
+    </div>
+
     <div class="round-lbl" id="round-lbl"></div>
 
-    <!-- Add Round button -->
     <div class="add-round-wrap">
-      <button class="btn btn-primary" id="add-btn" onclick="openStep1()">+ Add Round</button>
+      <button class="btn btn-primary" id="add-btn" onclick="openRoundInput()">+ Add Round</button>
 
-      <!-- Step 1: pick bidding team -->
-      <div id="step1" style="display:none" class="card">
-        <div class="section-title">Which team bid? (Hakem)</div>
-        <div class="team-pick-wrap">
-          <div class="team-pick-card" id="pick-A" onclick="selectBidTeam('A')">
-            <div class="pick-label">Team A</div>
-            <div class="pick-players" id="pick-A-players"></div>
-          </div>
-          <div class="vs-sep">VS</div>
-          <div class="team-pick-card" id="pick-B" onclick="selectBidTeam('B')">
-            <div class="pick-label">Team B</div>
-            <div class="pick-players" id="pick-B-players"></div>
-          </div>
-        </div>
-        <div class="step-nav">
-          <button class="btn btn-outline" onclick="closeRoundInput()" style="padding:10px">Cancel</button>
-          <button class="btn btn-primary" id="step1-next" onclick="goStep2()" style="padding:10px" disabled>Next →</button>
-        </div>
-      </div>
+      <div id="round-input" style="display:none" class="card">
+        <label>Who bid? (Hakem)</label>
+        <select id="bidder-sel" onchange="updatePreview()"></select>
 
-      <!-- Step 2: score entry -->
-      <div id="step2" style="display:none" class="card">
-        <div class="bid-row">
-          <label>Bid:</label>
-          <input id="bid-inp" type="number" placeholder="e.g. 140" min="100" max="200" oninput="updatePreview()">
-        </div>
-        <div class="score-entry">
-          <div class="score-col">
-            <div class="score-col-header bidder" id="bidder-col-lbl">Team A · Hakem</div>
-            <label>Outcome</label>
-            <select id="outcome-sel" class="outcome-select" onchange="updatePreview()">
-              <option value="">— result —</option>
-              <option value="win">✓ Win</option>
-              <option value="kapp">🌟 Win Double (Kapp)</option>
-              <option value="lose">✗ Lose</option>
-              <option value="kapp_against">💀 Lose Double</option>
-            </select>
-          </div>
-          <div class="score-col">
-            <div class="score-col-header defender" id="def-col-lbl">Team B · Defending</div>
-            <label>Points captured</label>
-            <div class="stepper" id="opp-stepper">
-              <button class="stepper-btn" onclick="stepOpp(-5)">−</button>
-              <div class="stepper-val" id="opp-val">0</div>
-              <button class="stepper-btn" onclick="stepOpp(5)">+</button>
-            </div>
-            <div class="stepper-label" id="opp-stepper-label">0 pts</div>
-          </div>
-        </div>
+        <label>Bid</label>
+        <select id="bid-inp" onchange="updatePreview()"></select>
+
+        <label>Opponent points captured</label>
+        <select id="opp-score-sel" onchange="updatePreview()"></select>
+
         <div class="round-preview" id="round-preview"></div>
         <div class="step-nav">
-          <button class="btn btn-outline" onclick="goStep1()" style="padding:10px">← Back</button>
-          <button class="btn btn-primary" onclick="submitRound()" style="padding:10px">Confirm ✓</button>
+          <button class="btn btn-outline" onclick="closeRoundInput()" style="padding:10px">Cancel</button>
+          <button class="btn btn-primary" onclick="submitRound()" style="padding:10px">Confirm</button>
         </div>
       </div>
     </div>
 
-    <!-- History -->
-    <div class="card">
-      <div class="section-title">Round History</div>
-      <div class="history-list" id="history-list"></div>
+    <div class="card" style="padding:8px 0">
+      <div class="history-wrap">
+        <table class="history-table">
+          <thead><tr><th class="team-a-color">Team A</th><th class="team-b-color">Team B</th></tr></thead>
+          <tbody id="history-list"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
-// ── localStorage-based storage (no server needed) ────────────────────────
-const OUTCOMES_JS = {
-  win:          bid => bid,
-  kapp:         bid => bid * 2,
-  lose:         bid => -bid,
-  kapp_against: bid => -bid * 2,
-};
+// ── Constants ─────────────────────────────────────────────────────────────
+const PRESET_NAMES = ['Nima', 'Sina', 'Samad', 'Kamyar', 'Mamali', 'Armin'];
+const SEAT_COLORS = ['#8B0015', '#1B3A6B', '#8B0015', '#1B3A6B'];
+// Scoring: total points per round = 200
+// Bidder score = 200 - oppScore
+// Kapp: opp=0 → bidder +bid*2, opp 0
+// Kapp against: opp>100 → bidder -bid*2, opp gets min(oppScore, bid)
+// Win: bidderScore >= bid → bidder +bid, opp gets min(oppScore, bid)
+// Lose: bidderScore < bid → bidder -bid, opp gets min(oppScore, bid)
+const OUTCOME_LABELS = { win:'Win', kapp:'Shelem', lose:'Lose', kapp_against:'Shelem Lost' };
+
+// ── Helpers ───────────────────────────────────────────────────────────────
 function genId() { return Math.random().toString(36).slice(2,8); }
 function lsGet(id) { try { return JSON.parse(localStorage.getItem('shelem_'+id)); } catch(e) { return null; } }
 function lsSave(game) { localStorage.setItem('shelem_'+game.id, JSON.stringify(game)); return game; }
 function calcDeltas(bidderTeam, bid, outcome, oppScore) {
   const oppTeam = bidderTeam === 'A' ? 'B' : 'A';
-  return { [bidderTeam]: OUTCOMES_JS[outcome](bid), [oppTeam]: outcome === 'kapp' ? 0 : oppScore };
+  let bidderDelta, oppDelta;
+  if (outcome === 'kapp') {
+    bidderDelta = bid * 2;
+    oppDelta = 0;
+  } else if (outcome === 'kapp_against') {
+    bidderDelta = -bid * 2;
+    oppDelta = Math.min(oppScore, bid);
+  } else if (outcome === 'win') {
+    bidderDelta = bid;
+    oppDelta = Math.min(oppScore, bid);
+  } else {
+    bidderDelta = -bid;
+    oppDelta = Math.min(oppScore, bid);
+  }
+  return { [bidderTeam]: bidderDelta, [oppTeam]: oppDelta };
 }
 function recompute(game) {
   game.teams.A.score = game.teams.B.score = 0;
@@ -370,13 +637,20 @@ function recompute(game) {
   }
   return game;
 }
-const API = '';
+function getInitials(name) {
+  if (!name) return '?';
+  const p = name.trim().split(/\s+/);
+  return p.length >= 2 ? (p[0][0] + p[1][0]).toUpperCase() : name.slice(0, 2).toUpperCase();
+}
+
+// ── State ─────────────────────────────────────────────────────────────────
 let G = null;
-let selectedDealer = null;
-let selectedBidTeam = null;
-let oppScore = 0;
 let editingRound = null;
 let editOppScore = 0;
+const seats = ['Kamyar', 'Nima', 'Sina', 'Samad']; // DEV: auto-populated for testing
+let dealerSeatIdx = null;
+let editingSeat = null;
+let selectedPreset = null;
 
 // ── Screens ───────────────────────────────────────────────────────────────
 function showScreen(id) {
@@ -384,101 +658,247 @@ function showScreen(id) {
   document.getElementById(id).classList.add('active');
 }
 
-// ── Setup ─────────────────────────────────────────────────────────────────
-function allPlayers() {
-  const raw = [
-    document.getElementById('a-p1').value.trim(),
-    document.getElementById('a-p2').value.trim(),
-    document.getElementById('b-p1').value.trim(),
-    document.getElementById('b-p2').value.trim(),
-  ].filter(Boolean);
-  const seen = new Set();
-  return raw.filter(n => { const k = n.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; });
-}
-
-function refreshDealer() {
-  const players = allPlayers();
-  const picker = document.getElementById('dealer-picker');
-  if (players.length < 2) {
-    picker.innerHTML = '<div class="dealer-btn" style="color:var(--muted);grid-column:1/-1">Enter player names above</div>';
-    selectedDealer = null; return;
+// ── Populate dropdowns ────────────────────────────────────────────────────
+function populateTargetScore() {
+  const sel = document.getElementById('target-score');
+  for (let v = 500; v <= 2000; v += 50) {
+    const opt = document.createElement('option');
+    opt.value = v; opt.textContent = v;
+    if (v === 1150) opt.selected = true;
+    sel.appendChild(opt);
   }
-  if (selectedDealer && !players.includes(selectedDealer)) selectedDealer = null;
-  picker.innerHTML = players.map(p =>
-    `<div class="dealer-btn ${selectedDealer===p?'selected':''}" onclick="selectDealer('${p}')">${p}</div>`
-  ).join('');
 }
 
-function selectDealer(name) {
-  selectedDealer = selectedDealer === name ? null : name;
-  refreshDealer();
+function populateBidDropdown() {
+  const sel = document.getElementById('bid-inp');
+  sel.innerHTML = '<option value=""></option>';
+  for (let v = 100; v <= 200; v += 5) {
+    const opt = document.createElement('option');
+    opt.value = v; opt.textContent = v;
+    sel.appendChild(opt);
+  }
 }
 
-async function createGame() {
-  const aP1 = document.getElementById('a-p1').value.trim();
-  const aP2 = document.getElementById('a-p2').value.trim();
-  const bP1 = document.getElementById('b-p1').value.trim();
-  const bP2 = document.getElementById('b-p2').value.trim();
-  if (!aP1 || !aP2 || !bP1 || !bP2) { alert('Enter all 4 player names'); return; }
-  const names = [aP1, aP2, bP1, bP2];
-  if (new Set(names.map(n => n.toLowerCase())).size < 4) { alert('All 4 player names must be unique'); return; }
-  if (!selectedDealer) { alert('Pick a dealer'); return; }
-
-  const id = genId();
-  G = lsSave({ id, created_at: new Date().toISOString(),
-    target_score: parseInt(document.getElementById('target-score').value) || 1650,
-    dealer: selectedDealer,
-    teams: {
-      A: { name: 'Team A', players: [aP1, aP2], score: 0 },
-      B: { name: 'Team B', players: [bP1, bP2], score: 0 },
-    }, rounds: [], finished: false, winner: null });
-  renderGame();
-  showScreen('screen-game');
+function populateOppScoreDropdown() {
+  const sel = document.getElementById('opp-score-sel');
+  sel.innerHTML = '';
+  for (let v = 0; v <= 200; v += 5) {
+    const opt = document.createElement('option');
+    opt.value = v; opt.textContent = v + ' pts';
+    sel.appendChild(opt);
+  }
 }
 
-async function joinGame() {
-  const id = document.getElementById('join-id').value.trim().toLowerCase();
-  if (!id) return;
-  try {
-    G = lsGet(id);
-    if (!G) throw new Error('Game not found');
-    renderGame(); showScreen('screen-game');
-  } catch(e) { alert(e.message); }
+function deriveOutcome(bid, oppScore) {
+  if (oppScore === 0) return 'kapp';
+  if (oppScore > 100) return 'kapp_against';
+  const bidderScore = 200 - oppScore;
+  return bidderScore >= bid ? 'win' : 'lose';
 }
 
-// ── Render ────────────────────────────────────────────────────────────────
-function renderGame() {
-  if (!G) return;
-  document.getElementById('gid-lbl').textContent = G.id;
-  document.getElementById('dealer-lbl').textContent = G.dealer ? `🃏 ${G.dealer}` : '';
-  document.getElementById('round-lbl').textContent = `Round ${G.rounds.length + 1}`;
+// ── Setup: Circular Table ─────────────────────────────────────────────────
+function seatHTML(i) {
+  const name = seats[i];
+  const hasName = !!name;
+  const isDealer = dealerSeatIdx === i;
+  const teamLabels = ['Team A', 'Team B', 'Team A', 'Team B'];
+  const teamClass = (i === 0 || i === 2) ? 'team-a-color' : 'team-b-color';
+  const ringClass = (i === 0 || i === 2) ? 'team-a-ring' : 'team-b-ring';
+  return `<div class="seat ${hasName ? 'has-name' : ''} ${isDealer ? 'is-dealer' : ''}" data-seat="${i}">
+    <div class="seat-avatar ${hasName ? ringClass : ''}" style="color:${SEAT_COLORS[i]}">
+      ${hasName ? getInitials(name) : '<span style="color:var(--muted)">+</span>'}
+      <span class="dealer-badge">DEAL</span>
+    </div>
+    <div class="seat-name ${hasName ? '' : 'empty'}">${hasName ? name : 'Tap to add'}</div>
+    <div class="seat-team-tag ${teamClass}">${teamLabels[i]}</div>
+  </div>`;
+}
 
-  const entries = Object.entries(G.teams);
-  const maxScore = Math.max(...entries.map(([,t]) => t.score));
-  document.getElementById('scoreboard').innerHTML = entries.map(([k, t]) => {
-    const pct = Math.min(100, Math.max(0, (t.score / G.target_score) * 100));
-    const lead = t.score > 0 && t.score === maxScore;
-    return `<div class="score-box ${lead?'leading':''}">
-      <div class="t-name">${t.name}</div>
-      <div class="t-players">${t.players.join(' & ')}</div>
-      <div class="t-score">${t.score}</div>
-      <div class="t-target">/ ${G.target_score}</div>
-      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+function renderSetupTable() {
+  const wrap = document.getElementById('setup-table');
+  // Layout: top seat, then left | center | right, then bottom seat
+  wrap.innerHTML = `
+    ${seatHTML(0)}
+    <div class="table-mid">
+      ${seatHTML(3)}
+      <div class="table-center"><span class="table-label">Shelem</span></div>
+      ${seatHTML(1)}
+    </div>
+    ${seatHTML(2)}
+  `;
+
+  // Table seats always edit names
+  wrap.querySelectorAll('.seat').forEach(el => {
+    const i = parseInt(el.dataset.seat);
+    el.onclick = () => openNameModal(i);
+  });
+
+  updateSetupState();
+}
+
+function renderDealerChips() {
+  const container = document.getElementById('dealer-chips');
+  const card = document.getElementById('dealer-card');
+  const allFilled = seats.every(Boolean);
+
+  if (!allFilled) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+
+  const teamLabels = ['Team A', 'Team B', 'Team A', 'Team B'];
+  container.innerHTML = seats.map((name, i) => {
+    const teamClass = (i === 0 || i === 2) ? 'team-a-color' : 'team-b-color';
+    return `<div class="dealer-chip-btn ${dealerSeatIdx === i ? 'selected' : ''}" onclick="selectDealerSeat(${i})">
+      ${name}
+      <div class="chip-team ${teamClass}">${teamLabels[i]}</div>
     </div>`;
   }).join('');
+}
 
-  // Populate team picker labels
-  if (document.getElementById('pick-A-players')) {
-    document.getElementById('pick-A-players').textContent = G.teams.A.players.join(' & ');
-    document.getElementById('pick-B-players').textContent = G.teams.B.players.join(' & ');
+function updateSetupState() {
+  const allFilled = seats.every(Boolean);
+  const startBtn = document.getElementById('start-btn');
+  startBtn.disabled = !(allFilled && dealerSeatIdx !== null);
+  renderDealerChips();
+}
+
+function selectDealerSeat(idx) {
+  dealerSeatIdx = (dealerSeatIdx === idx) ? null : idx;
+  renderDealerChips();
+  document.getElementById('start-btn').disabled = dealerSeatIdx === null;
+  // Update table to show dealer badge
+  renderSetupTable();
+}
+
+// ── Name modal with presets ───────────────────────────────────────────────
+function openNameModal(seatIdx) {
+  editingSeat = seatIdx;
+  selectedPreset = null;
+  const modal = document.getElementById('name-modal');
+  const input = document.getElementById('modal-name-input');
+  const teamLabels = ['Team A', 'Team B', 'Team A', 'Team B'];
+  const modalTitle = document.getElementById('modal-title');
+  modalTitle.textContent = `Seat ${seatIdx + 1} — ${teamLabels[seatIdx]}`;
+  modalTitle.className = (seatIdx === 0 || seatIdx === 2) ? 'team-a-color' : 'team-b-color';
+  input.value = seats[seatIdx] || '';
+
+  // Render preset chips
+  const container = document.getElementById('preset-names');
+  const takenNames = seats.filter((n, i) => n && i !== seatIdx).map(n => n.toLowerCase());
+  container.innerHTML = PRESET_NAMES.map(name => {
+    const taken = takenNames.includes(name.toLowerCase());
+    const current = seats[seatIdx] && seats[seatIdx].toLowerCase() === name.toLowerCase();
+    return `<div class="preset-chip ${taken ? 'taken' : ''} ${current ? 'selected' : ''}"
+      onclick="pickPreset(this, '${name}')">${name}</div>`;
+  }).join('');
+
+  if (seats[seatIdx] && PRESET_NAMES.map(n=>n.toLowerCase()).includes(seats[seatIdx].toLowerCase())) {
+    selectedPreset = seats[seatIdx];
+    input.value = '';
   }
+
+  modal.classList.add('show');
+  input.onkeydown = e => { if (e.key === 'Enter') confirmName(); };
+}
+
+function pickPreset(el, name) {
+  if (el.classList.contains('taken')) return;
+  document.querySelectorAll('#preset-names .preset-chip').forEach(c => c.classList.remove('selected'));
+
+  if (selectedPreset === name) {
+    selectedPreset = null;
+  } else {
+    selectedPreset = name;
+    el.classList.add('selected');
+    document.getElementById('modal-name-input').value = '';
+  }
+}
+
+function closeModal() {
+  document.getElementById('name-modal').classList.remove('show');
+  editingSeat = null;
+  selectedPreset = null;
+}
+
+function confirmName() {
+  const input = document.getElementById('modal-name-input');
+  const name = (selectedPreset || input.value).trim();
+  if (!name) { seats[editingSeat] = null; closeModal(); renderSetupTable(); return; }
+
+  for (let i = 0; i < 4; i++) {
+    if (i !== editingSeat && seats[i] && seats[i].toLowerCase() === name.toLowerCase()) {
+      alert('Name already taken'); return;
+    }
+  }
+  seats[editingSeat] = name;
+  closeModal();
+  renderSetupTable();
+}
+
+// ── Dealer rotation ───────────────────────────────────────────────────────
+function getDealerForRound(game, roundIndex) {
+  const order = game.seat_order;
+  const firstIdx = game.first_dealer_seat;
+  const pos = (order.indexOf(firstIdx) + roundIndex) % 4;
+  return { seatIdx: order[pos], name: game.seat_names[order[pos]] };
+}
+function getCurrentDealer(game) { return getDealerForRound(game, game.rounds.length); }
+
+// ── Create Game ───────────────────────────────────────────────────────────
+function createGame() {
+  if (!seats.every(Boolean) || dealerSeatIdx === null) return;
+  const seatOrder = [0, 1, 2, 3];
+  const seatNames = { 0: seats[0], 1: seats[1], 2: seats[2], 3: seats[3] };
+  const id = genId();
+  G = lsSave({
+    id, created_at: new Date().toISOString(),
+    target_score: parseInt(document.getElementById('target-score').value) || 1150,
+    seat_order: seatOrder, seat_names: seatNames, first_dealer_seat: dealerSeatIdx,
+    teams: {
+      A: { name: 'Team A', players: [seats[0], seats[2]], score: 0 },
+      B: { name: 'Team B', players: [seats[1], seats[3]], score: 0 },
+    },
+    rounds: [], finished: false, winner: null,
+  });
+  renderGame(); showScreen('screen-game');
+}
+
+// ── Render Game ───────────────────────────────────────────────────────────
+function renderGame() {
+  if (!G) return;
+  const cd = getCurrentDealer(G);
+  document.getElementById('round-lbl').textContent = `Round ${G.rounds.length + 1} · 🃏 ${cd.name} deals`;
+
+  const tA = G.teams.A, tB = G.teams.B;
+  const pctA = Math.min(50, Math.max(0, (tA.score / G.target_score) * 50));
+  const pctB = Math.min(50, Math.max(0, (tB.score / G.target_score) * 50));
+
+  document.getElementById('scoreboard').innerHTML = `
+    <div class="score-col-wrap left">
+      <div class="t-name team-a-color">Team A</div>
+      <div class="t-players">${tA.players.join(' & ')}</div>
+      <div class="t-score">${tA.score}</div>
+    </div>
+    <div class="score-col-wrap right">
+      <div class="t-name team-b-color">Team B</div>
+      <div class="t-players">${tB.players.join(' & ')}</div>
+      <div class="t-score">${tB.score}</div>
+    </div>`;
+
+  document.getElementById('mk-bar-wrap').innerHTML = `
+    <div class="mk-bar">
+      <div class="mk-fill-left" style="width:${pctA}%"></div>
+      <div class="mk-fill-right" style="width:${pctB}%"></div>
+      <div class="mk-center"></div>
+    </div>
+    <div class="mk-labels"><span>${G.target_score}</span><span>0</span><span>${G.target_score}</span></div>`;
+
+
 
   renderHistory();
 
   if (G.finished && G.winner) {
-    const wt = G.teams[G.winner];
-    const lt = G.teams[G.winner==='A'?'B':'A'];
-    document.getElementById('w-team').textContent = `${wt.name} Wins! 🎉`;
+    const wt = G.teams[G.winner], lt = G.teams[G.winner==='A'?'B':'A'];
+    document.getElementById('w-team').textContent = `${wt.name} Wins!`;
     document.getElementById('w-players').textContent = wt.players.join(' & ');
     document.getElementById('w-score').textContent = `${wt.score} – ${lt.score}`;
     document.getElementById('winner-section').style.display = 'block';
@@ -493,147 +913,117 @@ function renderGame() {
 function renderHistory() {
   const list = document.getElementById('history-list');
   if (!G.rounds.length) {
-    list.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;padding:8px 0">No rounds yet</div>';
+    list.innerHTML = '<tr><td colspan="2" style="color:var(--muted);font-size:0.82rem;padding:12px;text-align:center;font-weight:400">No rounds yet</td></tr>';
     return;
   }
   const latestIdx = G.rounds.length - 1;
-  const OUTCOME_LABELS = { win:'Win', kapp:'Kapp 🌟', lose:'Lose', kapp_against:'Kapp 💀' };
 
   list.innerHTML = [...G.rounds].reverse().map((r, ri) => {
     const absIdx = G.rounds.length - 1 - ri;
     const isLatest = absIdx === latestIdx;
     const isEditing = editingRound === r.round;
+    const dA = r.delta.A, dB = r.delta.B;
     const bKey = r.bidder_team;
-    const dKey = bKey === 'A' ? 'B' : 'A';
-    const bDelta = r.delta[bKey];
-    const dDelta = r.delta[dKey];
 
     if (isEditing) {
-      return `<div class="round-row">
-        <div class="edit-inline">
-          <div class="bid-row" style="margin-bottom:8px">
-            <label>Bid:</label>
-            <input id="edit-bid" type="number" value="${r.bid}" style="margin-bottom:0;flex:1">
-          </div>
-          <div class="score-entry">
-            <div class="score-col">
-              <div class="score-col-header bidder">${G.teams[bKey].name} · Hakem</div>
-              <label>Outcome</label>
-              <select id="edit-outcome" style="margin-bottom:0">
-                ${['win','kapp','lose','kapp_against'].map(o =>
-                  `<option value="${o}" ${o===r.outcome?'selected':''}>${OUTCOME_LABELS[o]}</option>`
-                ).join('')}
-              </select>
-            </div>
-            <div class="score-col">
-              <div class="score-col-header defender">${G.teams[dKey].name} · Defending</div>
-              <label>Points captured</label>
-              <div class="stepper">
-                <button class="stepper-btn" onclick="stepEdit(-5)">−</button>
-                <div class="stepper-val" id="edit-opp-val">${editOppScore}</div>
-                <button class="stepper-btn" onclick="stepEdit(5)">+</button>
-              </div>
-            </div>
-          </div>
-          <div class="edit-nav">
-            <button class="btn-cancel-edit" onclick="cancelEdit()">✕ Cancel</button>
-            <button class="btn-save-edit" onclick="saveEdit(${r.round}, '${bKey}')">✓ Save</button>
-          </div>
+      return `<tr><td colspan="2" style="padding:8px 6px">
+        <label>Who bid?</label>
+        <select id="edit-bidder" style="margin-bottom:6px">
+          ${[0,1,2,3].map(i => {
+            const team = (i===0||i===2) ? 'A' : 'B';
+            const sel = team === bKey ? 'selected' : '';
+            return `<option value="${i}" ${sel}>${G.seat_names[i]} (Team ${team})</option>`;
+          }).join('')}
+        </select>
+        <label>Bid</label>
+        <select id="edit-bid" style="margin-bottom:6px">
+          ${(() => { let o=''; for(let v=100;v<=200;v+=5) o+=`<option value="${v}" ${v===r.bid?'selected':''}>${v}</option>`; return o; })()}
+        </select>
+        <label>Opponent points</label>
+        <select id="edit-opp-sel" style="margin-bottom:6px">
+          ${(() => { let o=''; for(let v=0;v<=200;v+=5) o+=`<option value="${v}" ${v===r.opponent_score?'selected':''}>${v} pts</option>`; return o; })()}
+        </select>
+        <div class="edit-nav">
+          <button class="btn-cancel-edit" onclick="cancelEdit()">Cancel</button>
+          <button class="btn-save-edit" onclick="saveEdit(${r.round})">Save</button>
         </div>
-      </div>`;
+      </td></tr>`;
     }
 
-    return `<div class="round-row">
-      <div class="rnum">${r.round}</div>
-      <div class="r-outcome">
-        <div class="outcome-name">${G.teams[bKey].name} ${r.kapp?'<span class="kapp-badge">KAPP</span>':''}</div>
-        <div class="bid-info">${OUTCOME_LABELS[r.outcome]} · bid ${r.bid}</div>
-      </div>
-      <div class="delta-cell ${bDelta>=0?'pos':'neg'}">${bDelta>0?'+':''}${bDelta}<span class="team-tiny">${G.teams[bKey].name}</span></div>
-      <div class="delta-cell ${dDelta>=0?'pos':'neg'}">${dDelta>0?'+':''}${dDelta}<span class="team-tiny">${G.teams[dKey].name}</span></div>
-      <div>${isLatest ? `<button class="edit-btn" onclick="startEdit(${r.round}, ${r.opponent_score})">✏️</button>` : ''}</div>
-    </div>`;
+    const fmt = (d) => d > 0 ? `+${d}` : `${d}`;
+    const cls = (d) => d > 0 ? 'pos' : d < 0 ? 'neg' : 'zero';
+    const isBidderA = bKey === 'A';
+    const bidderName = G.seat_names[r.bidder_seat] || G.teams[bKey].players[0];
+    const tag = r.kapp ? `<span class="shelem-badge">SHELEM</span> · ${r.bid} (${bidderName})` : `${OUTCOME_LABELS[r.outcome]} · ${r.bid} (${bidderName})`;
+
+    return `<tr>
+      <td class="${cls(dA)}">${fmt(dA)}${isBidderA ? `<div class="round-info">${tag}</div>` : ''}</td>
+      <td class="${cls(dB)}" style="position:relative">${fmt(dB)}${!isBidderA ? `<div class="round-info">${tag}</div>` : ''}${isLatest ? `<button class="edit-btn" onclick="startEdit(${r.round})"><i class="fas fa-pen-to-square"></i></button>` : ''}</td>
+    </tr>`;
   }).join('');
 }
 
 // ── Round Input ───────────────────────────────────────────────────────────
-function openStep1() {
-  selectedBidTeam = null;
+function populateBidderDropdown() {
+  const sel = document.getElementById('bidder-sel');
+  sel.innerHTML = '<option value=""></option>';
+  // All 4 players from seat order
+  for (let i = 0; i < 4; i++) {
+    const name = G.seat_names[i];
+    const team = (i === 0 || i === 2) ? 'A' : 'B';
+    const opt = document.createElement('option');
+    opt.value = `${i}`;
+    opt.textContent = `${name} (Team ${team})`;
+    sel.appendChild(opt);
+  }
+}
+
+function openRoundInput() {
   document.getElementById('add-btn').style.display = 'none';
-  document.getElementById('step1').style.display = 'block';
-  document.getElementById('step2').style.display = 'none';
-  // refresh team labels
-  document.getElementById('pick-A-players').textContent = G.teams.A.players.join(' & ');
-  document.getElementById('pick-B-players').textContent = G.teams.B.players.join(' & ');
-  document.getElementById('pick-A').classList.remove('selected');
-  document.getElementById('pick-B').classList.remove('selected');
-  document.getElementById('step1-next').disabled = true;
+  document.getElementById('round-input').style.display = 'block';
+  populateBidderDropdown();
+  populateBidDropdown();
+  populateOppScoreDropdown();
+  document.getElementById('bidder-sel').value = '';
+  document.getElementById('bid-inp').value = '';
+  document.getElementById('opp-score-sel').value = '0';
+  document.getElementById('round-preview').className = 'round-preview';
 }
 
 function closeRoundInput() {
   document.getElementById('add-btn').style.display = 'block';
-  document.getElementById('step1').style.display = 'none';
-  document.getElementById('step2').style.display = 'none';
-  selectedBidTeam = null; oppScore = 0;
+  document.getElementById('round-input').style.display = 'none';
 }
 
-function selectBidTeam(key) {
-  selectedBidTeam = key;
-  document.getElementById('pick-A').classList.toggle('selected', key==='A');
-  document.getElementById('pick-B').classList.toggle('selected', key==='B');
-  document.getElementById('step1-next').disabled = false;
-}
-
-function goStep2() {
-  if (!selectedBidTeam) return;
-  const dKey = selectedBidTeam === 'A' ? 'B' : 'A';
-  document.getElementById('bidder-col-lbl').textContent = `${G.teams[selectedBidTeam].name} · Hakem`;
-  document.getElementById('def-col-lbl').textContent = `${G.teams[dKey].name} · Defending`;
-  document.getElementById('bid-inp').value = '';
-  document.getElementById('outcome-sel').value = '';
-  oppScore = 0;
-  document.getElementById('opp-val').textContent = '0';
-  document.getElementById('opp-stepper-label').textContent = '0 pts';
-  document.getElementById('round-preview').className = 'round-preview';
-  document.getElementById('step1').style.display = 'none';
-  document.getElementById('step2').style.display = 'block';
-}
-
-function goStep1() {
-  document.getElementById('step1').style.display = 'block';
-  document.getElementById('step2').style.display = 'none';
-}
-
-function stepOpp(delta) {
-  oppScore = Math.max(0, Math.min(200, oppScore + delta));
-  document.getElementById('opp-val').textContent = oppScore;
-  document.getElementById('opp-stepper-label').textContent = `${oppScore} pts`;
-  updatePreview();
+function getSelectedBidderTeam() {
+  const seatIdx = parseInt(document.getElementById('bidder-sel').value);
+  if (isNaN(seatIdx)) return null;
+  return (seatIdx === 0 || seatIdx === 2) ? 'A' : 'B';
 }
 
 function outcomeLabel(o) {
-  return { win:'✓ Win', kapp:'🌟 Kapp', lose:'✗ Lose', kapp_against:'💀 Kapp against' }[o] || o;
+  return { win:'Win', kapp:'Shelem', lose:'Lose', kapp_against:'Shelem Lost' }[o] || o;
 }
 
 function updatePreview() {
+  const bidderTeam = getSelectedBidderTeam();
   const bid = parseInt(document.getElementById('bid-inp').value);
-  const outcome = document.getElementById('outcome-sel').value;
+  const oppScore = parseInt(document.getElementById('opp-score-sel').value) || 0;
   const preview = document.getElementById('round-preview');
-  if (!bid || !outcome || !selectedBidTeam) { preview.className = 'round-preview'; return; }
+  if (!bid || !bidderTeam) { preview.className = 'round-preview'; return; }
 
-  const dKey = selectedBidTeam === 'A' ? 'B' : 'A';
-  const deltas = {
-    win: bid, kapp: bid*2, lose: -bid, kapp_against: -bid*2
-  };
-  const bDelta = deltas[outcome];
-  const dDelta = outcome === 'kapp' ? 0 : oppScore;
+  const outcome = deriveOutcome(bid, oppScore);
+  const dKey = bidderTeam === 'A' ? 'B' : 'A';
+  const d = calcDeltas(bidderTeam, bid, outcome, oppScore);
+  const bDelta = d[bidderTeam];
+  const dDelta = d[dKey];
 
   preview.className = 'round-preview show';
   preview.innerHTML = `
     <span class="preview-outcome ${bDelta>=0?'pos':'neg'}">${outcomeLabel(outcome)}</span>
     <span class="preview-deltas">
       <span class="preview-delta">
-        <span class="dlabel">${G.teams[selectedBidTeam].name} </span>
+        <span class="dlabel">${G.teams[bidderTeam].name} </span>
         <span class="dval ${bDelta>=0?'pos':'neg'}">${bDelta>0?'+':''}${bDelta}</span>
       </span>
       <span class="preview-delta">
@@ -643,24 +1033,25 @@ function updatePreview() {
     </span>`;
 }
 
-async function submitRound() {
+function submitRound() {
+  const bidderTeam = getSelectedBidderTeam();
   const bid = parseInt(document.getElementById('bid-inp').value);
-  const outcome = document.getElementById('outcome-sel').value;
-  if (!bid || bid < 100 || bid > 200) { alert('Bid must be 100–200'); return; }
-  if (!outcome) { alert('Select an outcome'); return; }
+  const oppScore = parseInt(document.getElementById('opp-score-sel').value) || 0;
+  if (!bidderTeam) { alert('Select who bid'); return; }
+  if (!bid) { alert('Select a bid'); return; }
+  const outcome = deriveOutcome(bid, oppScore);
 
-  try {
-    const d = calcDeltas(selectedBidTeam, bid, outcome, oppScore);
-    G.rounds.push({ round: G.rounds.length+1, bidder_team: selectedBidTeam, bid, outcome, opponent_score: oppScore, delta: d, success: d[selectedBidTeam]>0, kapp: ['kapp','kapp_against'].includes(outcome) });
-    for (const k of ['A','B']) G.teams[k].score += d[k];
-    for (const [k,t] of Object.entries(G.teams)) { if (t.score >= G.target_score && !G.finished) { G.finished=true; G.winner=k; } }
-    G = lsSave(G);
-    closeRoundInput();
-    renderGame();
-  } catch(e) { alert(e.message); }
+  const bidderSeat = parseInt(document.getElementById('bidder-sel').value);
+  const d = calcDeltas(bidderTeam, bid, outcome, oppScore);
+  G.rounds.push({ round: G.rounds.length+1, bidder_team: bidderTeam, bidder_seat: bidderSeat, bid, outcome, opponent_score: oppScore, delta: d, success: d[bidderTeam]>0, kapp: ['kapp','kapp_against'].includes(outcome) });
+  for (const k of ['A','B']) G.teams[k].score += d[k];
+  for (const [k,t] of Object.entries(G.teams)) { if (t.score >= G.target_score && !G.finished) { G.finished=true; G.winner=k; } }
+  G = lsSave(G);
+  closeRoundInput();
+  renderGame();
 }
 
-async function undoRound() {
+function undoRound() {
   if (!G?.rounds?.length) { alert('Nothing to undo'); return; }
   if (!confirm('Undo last round?')) return;
   const last = G.rounds.pop();
@@ -670,46 +1061,38 @@ async function undoRound() {
 }
 
 // ── Inline Edit ───────────────────────────────────────────────────────────
-function startEdit(roundNum, currentOpp) {
-  editingRound = roundNum; editOppScore = currentOpp;
-  renderHistory();
-}
+function startEdit(roundNum) { editingRound = roundNum; renderHistory(); }
 function cancelEdit() { editingRound = null; renderHistory(); }
 
-function stepEdit(delta) {
-  editOppScore = Math.max(0, Math.min(200, editOppScore + delta));
-  document.getElementById('edit-opp-val').textContent = editOppScore;
-}
-
-async function saveEdit(roundNum, bidderTeam) {
+function saveEdit(roundNum) {
+  const seatIdx = parseInt(document.getElementById('edit-bidder').value);
+  const bidderTeam = (seatIdx === 0 || seatIdx === 2) ? 'A' : 'B';
   const bid = parseInt(document.getElementById('edit-bid').value);
-  const outcome = document.getElementById('edit-outcome').value;
-  if (!bid || !outcome) { alert('Fill in all fields'); return; }
-  try {
-    const d = calcDeltas(bidderTeam, bid, outcome, editOppScore);
-    const idx = roundNum - 1;
-    G.rounds[idx] = { round: roundNum, bidder_team: bidderTeam, bid, outcome, opponent_score: editOppScore, delta: d, success: d[bidderTeam]>0, kapp: ['kapp','kapp_against'].includes(outcome) };
-    G = lsSave(recompute(G)); editingRound = null; renderGame();
-  } catch(e) { alert(e.message); }
+  const oppScore = parseInt(document.getElementById('edit-opp-sel').value) || 0;
+  if (!bid) { alert('Fill in all fields'); return; }
+  const outcome = deriveOutcome(bid, oppScore);
+  const d = calcDeltas(bidderTeam, bid, outcome, oppScore);
+  G.rounds[roundNum - 1] = { round: roundNum, bidder_team: bidderTeam, bidder_seat: seatIdx, bid, outcome, opponent_score: oppScore, delta: d, success: d[bidderTeam]>0, kapp: ['kapp','kapp_against'].includes(outcome) };
+  G = lsSave(recompute(G)); editingRound = null; renderGame();
 }
 
 // ── Stats / Winner ────────────────────────────────────────────────────────
 function renderStats() {
-  const r = G.rounds;
-  const w = G.winner;
+  const r = G.rounds, w = G.winner;
   const wt = G.teams[w], lt = G.teams[w==='A'?'B':'A'];
   document.getElementById('stats-grid').innerHTML = `
     <div class="stat-box"><div class="slabel">Total Rounds</div><div class="sval">${r.length}</div></div>
-    <div class="stat-box"><div class="slabel">Kapps</div><div class="sval">${r.filter(x=>x.outcome==='kapp').length}</div></div>
+    <div class="stat-box"><div class="slabel">Shelems</div><div class="sval">${r.filter(x=>x.outcome==='kapp').length}</div></div>
     <div class="stat-box"><div class="slabel">${wt.name} wins</div><div class="sval">${r.filter(x=>x.success&&x.bidder_team===w).length}</div></div>
     <div class="stat-box"><div class="slabel">${lt.name} wins</div><div class="sval">${r.filter(x=>x.success&&x.bidder_team!==w).length}</div></div>`;
 }
 function toggleStats() { document.getElementById('stats-section').classList.toggle('show'); }
 
-async function restartSamePlayers() {
+function restartSamePlayers() {
   const id = genId();
-  G = lsSave({ id, created_at: new Date().toISOString(),
-    target_score: G.target_score, dealer: G.dealer,
+  G = lsSave({
+    id, created_at: new Date().toISOString(),
+    target_score: G.target_score, seat_order: G.seat_order, seat_names: G.seat_names, first_dealer_seat: G.first_dealer_seat,
     teams: {
       A: { name: 'Team A', players: G.teams.A.players, score: 0 },
       B: { name: 'Team B', players: G.teams.B.players, score: 0 },
@@ -721,14 +1104,56 @@ async function restartSamePlayers() {
 document.getElementById('today-date').textContent =
   new Date().toLocaleDateString('en-AU', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
 
-if (window.Telegram?.WebApp) { Telegram.WebApp.ready(); Telegram.WebApp.expand(); }
+populateTargetScore();
+renderSetupTable();
 
 const urlParams = new URLSearchParams(window.location.search);
 const gp = urlParams.get('game');
 if (gp) {
   const g = lsGet(gp);
-  if (g) { G = g; renderGame(); showScreen('screen-game'); }
+  if (g) {
+    if (!g.seat_order) {
+      g.seat_order = [0, 1, 2, 3];
+      g.seat_names = { 0: g.teams.A.players[0], 1: g.teams.B.players[0], 2: g.teams.A.players[1], 3: g.teams.B.players[1] };
+      g.first_dealer_seat = 0;
+    }
+    G = g; renderGame(); showScreen('screen-game');
+  }
+}
+// ── Bottom sheet ──────────────────────────────────────────────────────────
+function openSheet() {
+  document.getElementById('sheet-overlay').classList.add('show');
+  requestAnimationFrame(() => document.getElementById('sheet').classList.add('show'));
+}
+function closeSheet() {
+  document.getElementById('sheet').classList.remove('show');
+  setTimeout(() => document.getElementById('sheet-overlay').classList.remove('show'), 250);
+}
+function sheetRestart() {
+  closeSheet();
+  setTimeout(() => restartSamePlayers(), 300);
+}
+function sheetEndGame() {
+  closeSheet();
+  setTimeout(() => {
+    if (confirm('End this game and go back to setup?')) {
+      showScreen('screen-setup');
+    }
+  }, 300);
 }
 </script>
+
+<!-- Bottom sheet -->
+<div class="sheet-overlay" id="sheet-overlay" onclick="closeSheet()"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-item" onclick="sheetRestart()">
+    <i class="fas fa-rotate-right"></i> Restart (same players)
+  </div>
+  <div class="sheet-item danger" onclick="sheetEndGame()">
+    <i class="fas fa-xmark"></i> End Game
+  </div>
+</div>
+
 </body>
 </html>
