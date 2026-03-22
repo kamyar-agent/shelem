@@ -143,12 +143,10 @@
     margin-top: 1px;
     font-weight: 600;
   }
-  .team-a-color { color: #8B0015; }
-  .team-b-color { color: #1B3A6B; }
-  .team-a-bg { background: rgba(139,0,21,0.1); }
-  .team-b-bg { background: rgba(27,58,107,0.1); }
-  .team-a-ring { border-color: #8B0015 !important; }
-  .team-b-ring { border-color: #1B3A6B !important; }
+  .team-a-color { color: #6B1530; }
+  .team-b-color { color: #1B5E4B; }
+  .team-a-ring { border-color: #6B1530 !important; }
+  .team-b-ring { border-color: #1B5E4B !important; }
 
   /* ─── Name picker modal ─────────────────────────────── */
   .name-modal {
@@ -234,8 +232,8 @@
     text-align: center;
     padding: 8px 6px 4px;
   }
-  .score-col-wrap.left { background: rgba(139,0,21,0.08); border-radius: var(--radius) 0 0 0; }
-  .score-col-wrap.right { background: rgba(27,58,107,0.08); border-radius: 0 var(--radius) 0 0; }
+  .score-col-wrap.left { background: rgba(107,21,48,0.08); border-radius: var(--radius) 0 0 0; }
+  .score-col-wrap.right { background: rgba(27,94,75,0.08); border-radius: 0 var(--radius) 0 0; }
   .t-name { font-size: 0.6rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
   .t-players { font-size: 0.6rem; color: var(--muted); margin: 1px 0 2px; }
   .t-score { font-size: 1.8rem; font-weight: 800; line-height: 1; }
@@ -243,7 +241,7 @@
   /* ─── MK Progress Bar ────────────────────────────────── */
   .mk-bar-wrap {
     padding: 0 6px 8px;
-    background: linear-gradient(to right, rgba(139,0,21,0.08), rgba(27,58,107,0.08));
+    background: linear-gradient(to right, rgba(107,21,48,0.08), rgba(27,94,75,0.08));
   }
   .mk-bar {
     height: 6px;
@@ -256,7 +254,7 @@
     position: absolute;
     top: 0; bottom: 0;
     right: 50%;
-    background: #8B0015;
+    background: #6B1530;
     border-radius: 3px 0 0 3px;
     transition: width 0.4s;
   }
@@ -264,7 +262,7 @@
     position: absolute;
     top: 0; bottom: 0;
     left: 50%;
-    background: #1B3A6B;
+    background: #1B5E4B;
     border-radius: 0 3px 3px 0;
     transition: width 0.4s;
   }
@@ -355,8 +353,8 @@
     letter-spacing: 1px; margin-bottom: 8px; padding: 6px 8px;
     border-radius: 6px; text-align: center;
   }
-  .score-col-header.bidder { background: rgba(139,0,21,0.1); color: #8B0015; }
-  .score-col-header.defender { background: rgba(27,58,107,0.1); color: #1B3A6B; }
+  .score-col-header.bidder { background: rgba(107,21,48,0.1); color: #6B1530; }
+  .score-col-header.defender { background: rgba(27,94,75,0.1); color: #1B5E4B; }
 
   .stepper {
     display: flex; align-items: center; border: 1px solid var(--input-border);
@@ -588,7 +586,7 @@
     <div class="card history-card" style="padding:8px 0">
       <div class="history-wrap">
         <table class="history-table">
-          <thead><tr><th class="team-a-color">Team A</th><th class="team-b-color">Team B</th></tr></thead>
+          <thead></thead>
           <tbody id="history-list"></tbody>
         </table>
       </div>
@@ -599,7 +597,7 @@
 <script>
 // ── Constants ─────────────────────────────────────────────────────────────
 const PRESET_NAMES = ['Nima', 'Sina', 'Samad', 'Kamyar', 'Mamali', 'Armin'];
-const SEAT_COLORS = ['#8B0015', '#1B3A6B', '#8B0015', '#1B3A6B'];
+const SEAT_COLORS = ['#6B1530', '#1B5E4B', '#6B1530', '#1B5E4B'];
 // Scoring: total points per round = 200
 // Bidder score = 200 - oppScore
 // Kapp: opp=0 → bidder +bid*2, opp 0
