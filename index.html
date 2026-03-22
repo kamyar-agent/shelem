@@ -849,7 +849,7 @@ function getCurrentDealer(game) { return getDealerForRound(game, game.rounds.len
 // ── Create Game ───────────────────────────────────────────────────────────
 function createGame() {
   if (!seats.every(Boolean) || dealerSeatIdx === null) return;
-  const seatOrder = [0, 1, 2, 3];
+  const seatOrder = [0, 3, 2, 1];
   const seatNames = { 0: seats[0], 1: seats[1], 2: seats[2], 3: seats[3] };
   const id = genId();
   G = lsSave({
