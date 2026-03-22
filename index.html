@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Shelem 🃏</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
   :root {
@@ -29,21 +30,24 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23ffecd1'/%3E%3Cpath d='M40 0L50 10L40 20L30 10Z' fill='none' stroke='%23e0c0a0' stroke-width='0.5'/%3E%3Cpath d='M0 40L10 50L0 60' fill='none' stroke='%23e0c0a0' stroke-width='0.5'/%3E%3Cpath d='M80 40L70 50L80 60' fill='none' stroke='%23e0c0a0' stroke-width='0.5'/%3E%3Cpath d='M40 60L50 70L40 80L30 70Z' fill='none' stroke='%23e0c0a0' stroke-width='0.5'/%3E%3Ccircle cx='40' cy='40' r='6' fill='none' stroke='%23d4aa80' stroke-width='0.5'/%3E%3Ccircle cx='40' cy='40' r='2' fill='%23d4aa80' opacity='0.3'/%3E%3Cpath d='M40 34L46 40L40 46L34 40Z' fill='none' stroke='%23c8986a' stroke-width='0.4'/%3E%3Cpath d='M10 10L15 15M70 10L65 15M10 70L15 65M70 70L65 65' stroke='%23d4aa80' stroke-width='0.4'/%3E%3Cpath d='M0 0L8 8M72 0L80 8M0 72L8 80M72 72L80 80' stroke='%23ddb890' stroke-width='0.3'/%3E%3Cpath d='M20 0v4M60 0v4M20 76v4M60 76v4M0 20h4M0 60h4M76 20h4M76 60h4' stroke='%23d4aa80' stroke-width='0.4'/%3E%3Cpath d='M36 10h8M36 70h8M10 36v8M70 36v8' stroke='%23c8986a' stroke-width='0.3'/%3E%3C/svg%3E");
     background-repeat: repeat;
     color: var(--text);
-    min-height: 100vh;
-    padding: 14px;
+    height: 100vh;
+    padding: 8px 10px;
+    padding-top: calc(8px + var(--tg-safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px));
+    padding-bottom: var(--tg-safe-area-inset-bottom, 0px);
+    overflow: hidden;
   }
   .screen { display: none; }
   .screen.active { display: block; }
 
-  h1 { text-align: center; font-size: 1.8rem; margin-bottom: 2px; }
-  .card { background: var(--card); border-radius: var(--radius); padding: 14px; margin-bottom: 10px; box-shadow: var(--shadow); }
-  .section-title { font-size: 0.68rem; text-transform: uppercase; color: var(--muted); letter-spacing: 1px; margin-bottom: 8px; }
-  label { display: block; font-size: 0.78rem; color: var(--muted); margin-bottom: 3px; }
+  h1 { text-align: center; font-size: 1.8rem; margin-bottom: 1px; }
+  .card { background: var(--card); border-radius: var(--radius); padding: 10px; margin-bottom: 6px; box-shadow: var(--shadow); }
+  .section-title { font-size: 0.65rem; text-transform: uppercase; color: var(--muted); letter-spacing: 1px; margin-bottom: 6px; }
+  label { display: block; font-size: 0.75rem; color: var(--muted); margin-bottom: 2px; }
 
   .btn {
-    display: block; width: 100%; padding: 13px; border: none;
-    border-radius: var(--radius); font-size: 1rem; font-weight: 600;
-    cursor: pointer; margin-bottom: 8px; transition: opacity 0.15s;
+    display: block; width: 100%; padding: 10px; border: none;
+    border-radius: var(--radius); font-size: 0.92rem; font-weight: 600;
+    cursor: pointer; margin-bottom: 6px; transition: opacity 0.15s;
   }
   .btn:active { opacity: 0.75; }
   .btn-primary { background: var(--accent); color: #fff; }
@@ -51,9 +55,9 @@
   .btn-sm { padding: 8px 14px; font-size: 0.85rem; width: auto; display: inline-block; margin-bottom: 0; }
 
   input, select {
-    width: 100%; padding: 11px; border-radius: 8px;
+    width: 100%; padding: 8px; border-radius: 8px;
     border: 1px solid var(--input-border); background: var(--input-bg);
-    color: var(--text); font-size: 0.95rem; margin-bottom: 8px;
+    color: var(--text); font-size: 0.88rem; margin-bottom: 5px;
     -webkit-appearance: none;
   }
   input:focus, select:focus { outline: none; border-color: var(--accent); }
@@ -64,7 +68,7 @@
     flex-direction: column;
     align-items: center;
     gap: 10px;
-    margin: 0 auto 12px;
+    margin: 0 auto 8px;
   }
   .table-mid {
     display: flex;
@@ -93,7 +97,7 @@
   .seat:active { transform: scale(0.95); }
 
   .seat-avatar {
-    width: 52px; height: 52px;
+    width: 46px; height: 46px;
     border-radius: 50%;
     background: var(--input-bg);
     border: 2.5px solid var(--border);
@@ -195,14 +199,14 @@
     gap: 8px;
   }
   .dealer-chip-btn {
-    padding: 12px 8px;
+    padding: 9px 8px;
     text-align: center;
     border-radius: 8px;
     border: 2px solid var(--border);
     background: var(--input-bg);
     cursor: pointer;
     transition: all 0.15s;
-    font-size: 0.88rem;
+    font-size: 0.82rem;
     font-weight: 500;
     color: var(--text);
   }
@@ -228,13 +232,13 @@
   .score-col-wrap {
     flex: 1;
     text-align: center;
-    padding: 10px 6px 6px;
+    padding: 8px 6px 4px;
   }
   .score-col-wrap.left { background: rgba(139,0,21,0.08); border-radius: var(--radius) 0 0 0; }
   .score-col-wrap.right { background: rgba(27,58,107,0.08); border-radius: 0 var(--radius) 0 0; }
-  .t-name { font-size: 0.65rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
-  .t-players { font-size: 0.65rem; color: var(--muted); margin: 1px 0 4px; }
-  .t-score { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+  .t-name { font-size: 0.6rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .t-players { font-size: 0.6rem; color: var(--muted); margin: 1px 0 2px; }
+  .t-score { font-size: 1.8rem; font-weight: 800; line-height: 1; }
 
   /* ─── MK Progress Bar ────────────────────────────────── */
   .mk-bar-wrap {
@@ -283,7 +287,7 @@
     padding: 0 2px;
   }
 
-  .round-lbl { text-align: center; font-size: 0.72rem; color: var(--muted); margin-bottom: 10px; padding-top: 6px; }
+  .round-lbl { text-align: center; font-size: 0.68rem; color: var(--muted); margin-bottom: 6px; padding-top: 4px; }
 
   /* ─── Two-column history (table) ──────────────────── */
   .history-table {
@@ -319,7 +323,7 @@
     color: var(--muted);
     margin-top: 1px;
   }
-  .history-wrap { max-height: 350px; overflow-y: auto; }
+  .history-wrap { overflow-y: auto; -webkit-overflow-scrolling: touch; }
   .pos { color: var(--green); }
   .neg { color: var(--red); }
   .zero { color: var(--muted); }
@@ -328,7 +332,7 @@
   .edit-btn:hover { color: var(--text); }
 
   /* ─── Add Round ───────────────────────────────────────── */
-  .add-round-wrap { margin-bottom: 10px; }
+  .add-round-wrap { margin-bottom: 6px; }
 
   .team-pick-wrap {
     display: grid; grid-template-columns: 1fr 36px 1fr; gap: 6px;
@@ -390,7 +394,7 @@
   .step-nav .btn { flex: 1; margin-bottom: 0; }
 
   /* ─── History ─────────────────────────────────────────── */
-  .history-list { max-height: 300px; overflow-y: auto; }
+  .history-list { }
   .round-row {
     display: grid; grid-template-columns: 22px 1fr 1fr 1fr 28px;
     gap: 4px; align-items: center;
@@ -426,7 +430,7 @@
   .stat-box .slabel { font-size: 0.68rem; color: var(--muted); margin-bottom: 3px; }
   .stat-box .sval { font-size: 1.1rem; font-weight: 700; }
 
-  .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
 
   /* ─── Menu button ──────────────────────────────────── */
   .menu-btn {
@@ -455,7 +459,7 @@
     bottom: 0; left: 0; right: 0;
     background: var(--card);
     border-radius: 16px 16px 0 0;
-    padding: 12px 16px 24px;
+    padding: 10px 16px calc(16px + var(--tg-safe-area-inset-bottom, 8px));
     z-index: 201;
     transform: translateY(100%);
     transition: transform 0.25s ease-out;
@@ -489,7 +493,7 @@
 <!-- ══════════════════ SETUP ══════════════════ -->
 <div id="screen-setup" class="screen active">
   <h1>🃏 Shelem</h1>
-  <p style="text-align:center; color:#b8a080; font-size:0.72rem; margin-bottom:14px" id="today-date"></p>
+  <p style="text-align:center; color:#b8a080; font-size:0.65rem; margin-bottom:8px" id="today-date"></p>
 
   <div class="card">
     <div class="section-title">Tap a seat to add a player</div>
@@ -550,7 +554,7 @@
         <span class="menu-dot"></span>
         <span class="menu-dot"></span>
       </button>
-      <button class="btn btn-outline btn-sm" onclick="undoRound()">↩ Undo</button>
+      <button class="btn btn-outline btn-sm" onclick="undoRound()"><i class="fas fa-rotate-left"></i> Undo</button>
     </div>
 
     <div class="card" style="padding:0; overflow:hidden">
@@ -581,7 +585,7 @@
       </div>
     </div>
 
-    <div class="card" style="padding:8px 0">
+    <div class="card history-card" style="padding:8px 0">
       <div class="history-wrap">
         <table class="history-table">
           <thead><tr><th class="team-a-color">Team A</th><th class="team-b-color">Team B</th></tr></thead>
@@ -647,7 +651,7 @@ function getInitials(name) {
 let G = null;
 let editingRound = null;
 let editOppScore = 0;
-const seats = ['Kamyar', 'Nima', 'Sina', 'Samad']; // DEV: auto-populated for testing
+const seats = [null, null, null, null];
 let dealerSeatIdx = null;
 let editingSeat = null;
 let selectedPreset = null;
@@ -895,6 +899,10 @@ function renderGame() {
 
 
   renderHistory();
+  requestAnimationFrame(() => {
+    const w = document.querySelector('.history-wrap');
+    if (w) w.style.maxHeight = (window.innerHeight - w.getBoundingClientRect().top - 10) + 'px';
+  });
 
   if (G.finished && G.winner) {
     const wt = G.teams[G.winner], lt = G.teams[G.winner==='A'?'B':'A'];
@@ -1103,6 +1111,19 @@ function restartSamePlayers() {
 // ── Init ──────────────────────────────────────────────────────────────────
 document.getElementById('today-date').textContent =
   new Date().toLocaleDateString('en-AU', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+// ── Telegram Mini App init ────────────────────────────────────────────────
+if (window.Telegram?.WebApp) {
+  const tg = Telegram.WebApp;
+  tg.ready();
+  tg.expand();
+  function syncViewport() {
+    const h = tg.viewportStableHeight || tg.viewportHeight;
+    if (h) document.documentElement.style.setProperty('--tg-viewport-stable-height', h + 'px');
+  }
+  tg.onEvent('viewportChanged', syncViewport);
+  syncViewport();
+}
 
 populateTargetScore();
 renderSetupTable();
