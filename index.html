@@ -961,7 +961,7 @@ function renderHistory() {
     const cls = (d) => d > 0 ? 'pos' : d < 0 ? 'neg' : 'zero';
     const isBidderA = bKey === 'A';
     const bidderName = G.seat_names[r.bidder_seat] || G.teams[bKey].players[0];
-    const tag = r.kapp ? `<span class="shelem-badge">SHELEM</span> · ${r.bid} (${bidderName})` : `${OUTCOME_LABELS[r.outcome]} · ${r.bid} (${bidderName})`;
+    const tag = r.kapp ? `<span class="shelem-badge">SHELEM</span> (${bidderName})` : `(${bidderName})`;
 
     return `<tr>
       <td class="${cls(dA)}">${fmt(dA)}${isBidderA ? `<div class="round-info">${tag}</div>` : ''}</td>
